@@ -1,5 +1,5 @@
 import {
-  EMAIL_RE, HttpError, clientKey, encryptToken, handler, isGmail,
+  EMAIL_RE, HttpError, clientKey, encryptToken, handler,
   randomToken, rateLimit, readJson, sha256, str, validateDueDate,
 } from '../_shared/util.ts';
 import { REQUEST_COLUMNS, sendRequestEmail } from '../_shared/email.ts';
@@ -18,7 +18,7 @@ Deno.serve(handler(async (req, db) => {
 
   const fail = (field: string, msg: string): never => { throw new HttpError(400, msg, 'validation', field); };
   if (name.length < 2 || name.length > 100) fail('fullName', 'Enter your full name.');
-  if (!EMAIL_RE.test(gmail) || gmail.length > 254 || !isGmail(gmail)) fail('gmail', 'Enter a valid Gmail address.');
+  if (!EMAIL_RE.test(gmail) || gmail.length > 254) fail('gmail', 'Enter a valid email address.');
   if (!EMAIL_RE.test(contact) || contact.length > 254) fail('contactEmail', 'Enter a valid contact email address.');
   if (!servicePassword.length || servicePassword.length > 256) fail('servicePassword', 'Enter the password you were given (up to 256 characters).');
   if (!/^[a-z0-9-]{1,40}$/.test(optionKey)) fail('optionKey', 'Choose a request type.');

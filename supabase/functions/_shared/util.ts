@@ -118,7 +118,6 @@ export async function requireAdmin(req: Request, db: Db) {
 
 // --- Validation --------------------------------------------------------------
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-export const isGmail = (e: string) => /@(gmail|googlemail)\.com$/i.test(e);
 export const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max + 1) : '');
 
 export function validateDueDate(v: unknown): string {

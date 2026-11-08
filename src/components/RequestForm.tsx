@@ -21,7 +21,7 @@ export function RequestForm({ option, onClose, onSuccess }: Props) {
   function validate(): Errors {
     const e: Errors = {};
     if (v.fullName.trim().length < 2) e.fullName = 'Enter your full name.';
-    if (!EMAIL_RE.test(v.gmail.trim()) || !/@(gmail|googlemail)\.com$/i.test(v.gmail.trim())) e.gmail = 'Enter a valid Gmail address.';
+    if (!EMAIL_RE.test(v.gmail.trim())) e.gmail = 'Enter a valid email address.';
     if (!EMAIL_RE.test(v.contactEmail.trim())) e.contactEmail = 'Enter a valid contact email address.';
     if (!v.servicePassword.length) e.servicePassword = 'Enter the password you were given.';
     else if (v.servicePassword.length > 256) e.servicePassword = 'Password must be 256 characters or fewer.';
