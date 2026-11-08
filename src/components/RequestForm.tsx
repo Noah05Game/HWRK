@@ -66,7 +66,7 @@ export function RequestForm({ option, onClose, onSuccess }: Props) {
       <form onSubmit={submit} noValidate>
         {field('fullName', 'Full name', { autoComplete: 'name', maxLength: 100 })}
         <div className="row">
-          {field('gmail', 'Gmail address', { type: 'email', autoComplete: 'email', maxLength: 254 })}
+          {field('gmail', 'School email address', { type: 'email', autoComplete: 'email', maxLength: 254 })}
           {field('contactEmail', 'Contact email', { type: 'email', maxLength: 254 })}
         </div>
         <div className="row">
