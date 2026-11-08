@@ -1,0 +1,12 @@
+project_id = "hwrk"
+
+# Auth is checked inside each function (admin role lookup), and public
+# functions are called by anonymous customers.
+[functions.submit-request]
+verify_jwt = false
+[functions.track-request]
+verify_jwt = false
+[functions.admin-update-status]
+verify_jwt = false
+[functions.admin-retry-email]
+verify_jwt = false

@@ -1,0 +1,6 @@
+[
+  { "key": "option-1", "name": "Sparx Maths", "description": "Get your Sparx Maths homework.", "accent": "#0A84FF" },
+  { "key": "option-2", "name": "Option 2", "description": "Placeholder description for the second request type.", "accent": "#30D158" },
+  { "key": "option-3", "name": "Option 3", "description": "Placeholder description for the third request type.", "accent": "#FF9F0A" },
+  { "key": "option-4", "name": "Option 4", "description": "Placeholder description for the fourth request type.", "accent": "#BF5AF2" }
+]
