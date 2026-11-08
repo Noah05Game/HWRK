@@ -8,5 +8,9 @@ verify_jwt = false
 verify_jwt = false
 [functions.admin-update-status]
 verify_jwt = false
+[functions.admin-report-issue]
+verify_jwt = false
+[functions.admin-delete-completed-request]
+verify_jwt = false
 [functions.admin-retry-email]
 verify_jwt = false

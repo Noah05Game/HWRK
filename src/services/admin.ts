@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { AdminRequest, EmailLog, HistoryRow } from '../types';
 
 const COLS =
-  'id, ticket_reference, customer_name, gmail_email, contact_email, due_date, status, admin_notes, created_at, updated_at, request_options(name)';
+  'id, ticket_reference, customer_name, gmail_email, contact_email, due_date, status, admin_notes, issue_reason, issue_reported_at, created_at, updated_at, request_options(name)';
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);

@@ -12,11 +12,13 @@ export interface SubmitResult {
 }
 export interface TrackResult {
   ticketReference: string; optionName: string; accent: string; status: Status; dueDate: string; createdAt: string; updatedAt: string;
+  issueReason: string | null; issueReportedAt: string | null;
 }
 
 export interface AdminRequest {
   id: string; ticket_reference: string; customer_name: string; gmail_email: string; contact_email: string;
-  due_date: string; status: Status; admin_notes: string; created_at: string; updated_at: string;
+  due_date: string; status: Status; admin_notes: string; issue_reason: string | null; issue_reported_at: string | null;
+  created_at: string; updated_at: string;
   request_options: { name: string } | null;
 }
 export interface HistoryRow { id: string; previous_status: Status | null; new_status: Status; changed_at: string }

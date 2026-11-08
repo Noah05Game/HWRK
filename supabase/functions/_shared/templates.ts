@@ -1,4 +1,4 @@
-export type EmailType = 'request_created' | 'request_in_progress' | 'request_completed';
+export type EmailType = 'request_created' | 'request_in_progress' | 'request_completed' | 'request_issue';
 
 export interface EmailData {
   name: string;
@@ -6,6 +6,7 @@ export interface EmailData {
   option: string;
   dueDate: string;
   url: string;
+  issueReason?: string;
 }
 
 const esc = (s: string) =>
@@ -62,5 +63,14 @@ export function buildEmail(type: EmailType, d: EmailData): { subject: string; ht
           ['Ticket', d.ref], ['Request', d.option], ['Status', 'Completed'],
         ], d.url),
       };
+    case 'request_issue': {
+      const reason = esc(d.issueReason ?? '');
+      return {
+        subject: `There is an issue with your HWRK request — ${d.ref}`,
+        html: layout('Your request could not be completed', `Hi ${name}, your request could not be completed because: ${reason}. Please fill out another request if you would still like this service.`, [
+          ['Ticket', d.ref], ['Request', d.option], ['Status', 'Issue reported'], ['Reason', reason],
+        ], d.url),
+      };
+    }
   }
 }

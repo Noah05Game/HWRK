@@ -8,7 +8,7 @@ Deno.serve(handler(async (req, db) => {
 
   const { data } = await db
     .from('requests')
-    .select('ticket_reference, status, due_date, created_at, updated_at, request_options(name, accent_colour)')
+    .select('ticket_reference, status, due_date, created_at, updated_at, issue_reason, issue_reported_at, request_options(name, accent_colour)')
     .eq('tracking_token_hash', await sha256(token))
     .maybeSingle();
   if (!data) throw notFound();
@@ -18,5 +18,6 @@ Deno.serve(handler(async (req, db) => {
   return {
     ticketReference: data.ticket_reference, optionName: opt?.name, accent: opt?.accent_colour,
     status: data.status, dueDate: data.due_date, createdAt: data.created_at, updatedAt: data.updated_at,
+    issueReason: data.issue_reason, issueReportedAt: data.issue_reported_at,
   };
 }));

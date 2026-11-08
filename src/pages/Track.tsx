@@ -52,6 +52,14 @@ export default function Track() {
               <div><dt>Due date</dt><dd>{fmtDate(data.dueDate)}</dd></div>
               <div><dt>Last updated</dt><dd>{fmtDateTime(data.updatedAt)}</dd></div>
             </dl>
+            {data.issueReason && (
+              <div className="banner error" role="status">
+                <strong>There’s an issue with this request</strong>
+                <p>{data.issueReason}</p>
+                {data.issueReportedAt && <p className="small muted">Reported {fmtDateTime(data.issueReportedAt)}</p>}
+                <p>Please fill out another request.</p>
+              </div>
+            )}
           </section>
         )}
       </main>

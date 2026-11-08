@@ -48,7 +48,7 @@ create index status_history_request_idx on public.status_history (request_id, ch
 create table public.email_logs (
   id uuid primary key default gen_random_uuid(),
   request_id uuid not null references public.requests (id) on delete cascade,
-  email_type text not null check (email_type in ('request_created', 'request_in_progress', 'request_completed')),
+  email_type text not null check (email_type in ('request_created', 'request_in_progress', 'request_completed', 'request_issue')),
   recipient text not null,
   delivery_status text not null check (delivery_status in ('sent', 'failed')),
   error_message text,

@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Eye, EyeOff, Loader2, RotateCw } from 'lucide-react';
+import { Eye, EyeOff, Loader2, RotateCw, Trash2 } from 'lucide-react';
 import { Modal } from './Modal';
 import { ConfirmDialog } from './ConfirmDialog';
 import { StatusBadge } from './StatusBadge';
 import { useToast } from '../hooks/useToast';
-import { retryEmail, updateStatus } from '../services/api';
+import { deleteCompletedRequest, reportRequestIssue, retryEmail, updateStatus } from '../services/api';
 import { getServicePassword, listEmailLogs, listHistory, saveNotes } from '../services/admin';
 import { fmtDate, fmtDateTime, isOverdue } from '../lib/format';
 import { STATUSES, STATUS_LABEL, type AdminRequest, type EmailLog, type HistoryRow, type Status } from '../types';
 
-interface Props { request: AdminRequest; token: string; onClose: () => void; onChanged: () => void; onSessionError: (e: unknown) => void }
+interface Props { request: AdminRequest; token: string; onClose: () => void; onChanged: () => void; onDeleted: () => void; onSessionError: (e: unknown) => void }
 
-const EMAIL_LABEL: Record<string, string> = { request_created: 'Request received', request_in_progress: 'In progress', request_completed: 'Completed' };
+const EMAIL_LABEL: Record<string, string> = { request_created: 'Request received', request_in_progress: 'In progress', request_completed: 'Completed', request_issue: 'Issue reported' };
 
-export function RequestDetail({ request: r, token, onClose, onChanged, onSessionError }: Props) {
+export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted, onSessionError }: Props) {
   const toast = useToast();
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [logs, setLogs] = useState<EmailLog[]>([]);
@@ -22,6 +22,11 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onSession
   const [notes, setNotes] = useState(r.admin_notes);
   const [savingNotes, setSavingNotes] = useState(false);
   const [showServicePassword, setShowServicePassword] = useState(false);
+  const [issueReason, setIssueReason] = useState('');
+  const [issueError, setIssueError] = useState('');
+  const [reportingIssue, setReportingIssue] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [pending, setPending] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState('');
@@ -64,6 +69,42 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onSession
     setSavingNotes(false);
   }
 
+  async function submitIssue() {
+    const reason = issueReason.trim();
+    if (!reason || reason.length > 2000) {
+      setIssueError('Enter an issue reason of 1 to 2,000 characters.');
+      return;
+    }
+    setReportingIssue(true);
+    setIssueError('');
+    try {
+      const result = await reportRequestIssue(token, r.id, reason);
+      setIssueReason('');
+      toast(result.email === 'sent' ? 'success' : 'error', result.email === 'sent'
+        ? 'Issue saved, status page updated, and customer emailed.'
+        : 'Issue saved and status page updated, but the email failed. Retry it from the email log.');
+      onChanged();
+      loadExtras();
+    } catch (e) {
+      onSessionError(e);
+      setIssueError((e as Error).message);
+    }
+    setReportingIssue(false);
+  }
+
+  async function removeCompletedRequest() {
+    setDeleting(true);
+    try {
+      await deleteCompletedRequest(token, r.id);
+      toast('success', `${r.ticket_reference} deleted.`);
+      onDeleted();
+    } catch (e) {
+      onSessionError(e);
+      toast('error', (e as Error).message);
+    }
+    setDeleting(false);
+  }
+
   async function retry(id: string) {
     setRetrying(id);
     try {
@@ -103,6 +144,28 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onSession
         ))}
       </div>
 
+      <h3>Report an issue</h3>
+      {r.issue_reason && (
+        <p className="banner error"><strong>Current reported issue:</strong> {r.issue_reason}</p>
+      )}
+      <textarea value={issueReason} onChange={(e) => setIssueReason(e.target.value)} rows={3} maxLength={2000}
+        placeholder="Explain why this request could not be completed" aria-label="Issue reason" />
+      {issueError && <p className="error-text" role="alert">{issueError}</p>}
+      <div className="actions start">
+        <button className="btn primary sm" onClick={submitIssue} disabled={reportingIssue}>
+          {reportingIssue ? 'Reporting…' : 'Report issue and email customer'}
+        </button>
+      </div>
+
+      {r.status === 'completed' && (
+        <>
+          <h3>Delete order</h3>
+          <div className="actions start">
+            <button className="btn danger sm" onClick={() => setConfirmDelete(true)}><Trash2 size={15} /> Delete completed order</button>
+          </div>
+        </>
+      )}
+
       <h3>Private notes</h3>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} maxLength={5000} placeholder="Only visible to admins" />
       <div className="actions start">
@@ -141,6 +204,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onSession
       {pending && (
         <ConfirmDialog title={`Change status to ${STATUS_LABEL[pending]}?`} message={`${r.ticket_reference} will move from ${STATUS_LABEL[r.status]} to ${STATUS_LABEL[pending]}. ${note(pending)}`}
           confirmLabel="Change status" busy={busy} onConfirm={confirmStatus} onCancel={() => setPending(null)} />
+      )}
+      {confirmDelete && (
+        <ConfirmDialog title="Delete completed order?" message={`${r.ticket_reference} and its history and email logs will be permanently deleted. This cannot be undone.`}
+          confirmLabel="Delete order" busy={deleting} onConfirm={removeCompletedRequest} onCancel={() => setConfirmDelete(false)} />
       )}
     </Modal>
   );

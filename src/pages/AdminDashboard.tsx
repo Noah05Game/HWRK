@@ -128,7 +128,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
         </div>
       )}
 
-      {open && <RequestDetail key={open.id} request={open} token={session.access_token} onClose={() => setOpenId(null)} onChanged={load} onSessionError={handleSessionError} />}
+      {open && <RequestDetail key={open.id} request={open} token={session.access_token} onClose={() => setOpenId(null)} onChanged={load} onDeleted={() => { setOpenId(null); load(); }} onSessionError={handleSessionError} />}
     </AdminLayout>
   );
 }

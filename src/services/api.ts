@@ -29,5 +29,9 @@ export const trackRequest = (token: string) => call<TrackResult>('track-request'
 
 export const updateStatus = (token: string, requestId: string, status: Status) =>
   call<{ changed: boolean; status: Status; email: 'sent' | 'failed' | 'none' }>('admin-update-status', { requestId, status }, token);
+export const reportRequestIssue = (token: string, requestId: string, reason: string) =>
+  call<{ email: 'sent' | 'failed' }>('admin-report-issue', { requestId, reason }, token);
+export const deleteCompletedRequest = (token: string, requestId: string) =>
+  call<{ deleted: boolean }>('admin-delete-completed-request', { requestId }, token);
 export const retryEmail = (token: string, logId: string) =>
   call<{ email: 'sent' | 'failed' }>('admin-retry-email', { logId }, token);

@@ -10,12 +10,13 @@ interface RequestRow {
   customer_name: string;
   contact_email: string;
   due_date: string;
+  issue_reason: string | null;
   tracking_token_enc: string;
   request_options: { name: string } | { name: string }[] | null;
 }
 
 export const REQUEST_COLUMNS =
-  'id, ticket_reference, customer_name, contact_email, due_date, tracking_token_enc, request_options(name)';
+  'id, ticket_reference, customer_name, contact_email, due_date, issue_reason, tracking_token_enc, request_options(name)';
 
 async function deliver(subject: string, html: string, to: string): Promise<string | null> {
   const key = Deno.env.get('RESEND_API_KEY');
@@ -38,7 +39,8 @@ export async function sendRequestEmail(db: Db, req: RequestRow, type: EmailType,
   const opt = Array.isArray(req.request_options) ? req.request_options[0] : req.request_options;
   const token = knownToken ?? (await decryptToken(req.tracking_token_enc));
   const { subject, html } = buildEmail(type, {
-    name: req.customer_name, ref: req.ticket_reference, option: opt?.name ?? '', dueDate: req.due_date, url: trackingUrl(token),
+    name: req.customer_name, ref: req.ticket_reference, option: opt?.name ?? '', dueDate: req.due_date,
+    url: trackingUrl(token), issueReason: req.issue_reason ?? undefined,
   });
   const error = await deliver(subject, html, req.contact_email);
   const status = error ? 'failed' : 'sent';
