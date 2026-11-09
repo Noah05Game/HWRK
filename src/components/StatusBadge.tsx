@@ -1,5 +1,5 @@
 import { STATUS_LABEL, type Status } from '../types';
 
-export function StatusBadge({ status }: { status: Status }) {
-  return <span className={`badge ${status}`}><i />{STATUS_LABEL[status]}</span>;
+export function StatusBadge({ status, label }: { status: Status; label?: string }) {
+  return <span className={`badge ${status}`}><i />{label ?? STATUS_LABEL[status]}</span>;
 }

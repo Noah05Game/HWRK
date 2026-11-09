@@ -5,6 +5,7 @@ import { AdminLayout } from '../layouts/AdminLayout';
 import { StatusBadge } from '../components/StatusBadge';
 import { RequestDetail } from '../components/RequestDetail';
 import { MaintenanceSettings } from '../components/MaintenanceSettings';
+import { QueueManagement } from '../components/QueueManagement';
 import { TermsSettings } from '../components/TermsSettings';
 import { useToast } from '../hooks/useToast';
 import { supabase } from '../lib/supabase';
@@ -47,7 +48,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
   useEffect(() => { load(); }, [load]);
 
   const stats = useMemo(() => {
-    const c = { total: rows?.length ?? 0, ordered: 0, in_progress: 0, completed: 0 };
+    const c = { total: rows?.length ?? 0, ordered: 0, in_progress: 0, completed: 0, cancelled: 0 };
     rows?.forEach((r) => { c[r.status]++; });
     return c;
   }, [rows]);
@@ -76,11 +77,12 @@ export default function AdminDashboard({ session }: { session: Session }) {
     );
   }
 
-  const statCards: [string, number, string][] = [['Total requests', stats.total, 'total'], ['Ordered', stats.ordered, 'ordered'], ['In Progress', stats.in_progress, 'in_progress'], ['Completed', stats.completed, 'completed']];
+  const statCards: [string, number, string][] = [['Total requests', stats.total, 'total'], ['Waiting', stats.ordered, 'ordered'], ['In Progress', stats.in_progress, 'in_progress'], ['Completed', stats.completed, 'completed'], ['Cancelled', stats.cancelled, 'cancelled']];
 
   return (
     <AdminLayout actions={actions}>
       {authorised && <><MaintenanceSettings /><TermsSettings /></>}
+      {authorised && rows && <QueueManagement requests={rows} onChanged={load} />}
       <section className="stats">
         {statCards.map(([label, n, k]) => (
           <div key={k} className={`stat glass ${k}`}><span className="muted small">{label}</span><strong>{n}</strong></div>

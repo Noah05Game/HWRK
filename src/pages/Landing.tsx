@@ -5,13 +5,16 @@ import { RequestForm } from '../components/RequestForm';
 import { Confirmation } from '../components/Confirmation';
 import { isConfigured } from '../lib/supabase';
 import { getMaintenanceSettings } from '../services/maintenance';
-import type { RequestOption, SubmitResult } from '../types';
+import { getOptionCapacity } from '../services/queue';
+import type { OptionCapacity, RequestOption, SubmitResult } from '../types';
 
 export default function Landing() {
   const [selected, setSelected] = useState<RequestOption | null>(null);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [maintenance, setMaintenance] = useState<boolean | null>(null);
   const [maintenanceError, setMaintenanceError] = useState('');
+  const [capacity, setCapacity] = useState<OptionCapacity[] | null>(null);
+  const [capacityError, setCapacityError] = useState('');
 
   const loadMaintenance = useCallback(async () => {
     setMaintenanceError('');
@@ -24,6 +27,20 @@ export default function Landing() {
   }, []);
 
   useEffect(() => { loadMaintenance(); }, [loadMaintenance]);
+
+  const loadCapacity = useCallback(async () => {
+    setCapacityError('');
+    try {
+      setCapacity(await getOptionCapacity());
+    } catch (e) {
+      setCapacityError((e as Error).message || 'Could not verify option capacity.');
+    }
+  }, []);
+  useEffect(() => {
+    loadCapacity();
+    const timer = window.setInterval(loadCapacity, 30_000);
+    return () => window.clearInterval(timer);
+  }, [loadCapacity]);
 
   return (
     <div className="page">
@@ -42,17 +59,29 @@ export default function Landing() {
             <button className="btn ghost sm" onClick={loadMaintenance}>Retry</button>
           </p>
         )}
+        {capacityError && (
+          <p className="banner error" role="alert">
+            Option availability could not be verified. New requests are temporarily unavailable.
+            <button className="btn ghost sm" onClick={loadCapacity}>Retry</button>
+          </p>
+        )}
         {!isConfigured && <p className="banner error">Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.</p>}
         <div className="options">
-          {REQUEST_OPTIONS.map((o) => (
+          {REQUEST_OPTIONS.map((o) => {
+            const availability = capacity?.find((item) => item.option_key === o.key);
+            const unavailable = !availability || availability.is_full;
+            return (
             <article key={o.key} className="card glass" style={{ '--accent': o.accent } as React.CSSProperties}>
               <span className="dot" />
               <h2>{o.name}</h2>
               <p className="muted">{o.description}</p>
-              <button className="btn accent" disabled={maintenance === null || Boolean(maintenanceError) || maintenance}
+              {availability && <p className="muted small">{availability.outstanding_count}/14 outstanding</p>}
+              {availability?.is_full && <p className="queue-full-note">Temporarily full. It will reopen when a request is completed or cancelled.</p>}
+              <button className="btn accent" disabled={maintenance === null || Boolean(maintenanceError) || maintenance || !capacity || Boolean(capacityError) || unavailable}
                 onClick={() => setSelected(o)}>Request</button>
             </article>
-          ))}
+            );
+          })}
         </div>
       </main>
       {selected && !result && (

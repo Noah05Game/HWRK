@@ -11,4 +11,4 @@ export const addDaysISO = (days: number) => {
   d.setDate(d.getDate() + days);
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 };
-export const isOverdue = (due: string, status: string) => status !== 'completed' && due < todayISO();
+export const isOverdue = (due: string, status: string) => status !== 'completed' && status !== 'cancelled' && due < todayISO();

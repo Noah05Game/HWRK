@@ -165,16 +165,41 @@ select option { background: var(--surface); }
 /* Badges */
 .badge { display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 11px; border-radius: 99px; font-size: 13px; font-weight: 500; white-space: nowrap; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); }
 .badge i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.badge.ordered { color: var(--ordered); } .badge.in_progress { color: var(--in_progress); } .badge.completed { color: var(--completed); } .badge.overdue { color: var(--danger); }
-.badge.ordered, .badge.in_progress, .badge.completed, .badge.overdue { background: color-mix(in srgb, currentColor 12%, transparent); border-color: color-mix(in srgb, currentColor 30%, transparent); }
+.badge.ordered { color: var(--ordered); } .badge.in_progress { color: var(--in_progress); } .badge.completed { color: var(--completed); } .badge.cancelled, .badge.overdue { color: var(--danger); }
+.badge.ordered, .badge.in_progress, .badge.completed, .badge.cancelled, .badge.overdue { background: color-mix(in srgb, currentColor 12%, transparent); border-color: color-mix(in srgb, currentColor 30%, transparent); }
 .pill { font-size: 12px; padding: 2px 8px; border-radius: 99px; margin-left: 6px; }
 .pill.sent { color: var(--completed); background: rgba(48, 209, 88, 0.12); } .pill.failed { color: var(--danger); background: rgba(255, 69, 58, 0.12); }
 
 /* Admin */
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
 .stat { padding: 18px 20px; display: flex; flex-direction: column; gap: 4px; border-top: 2px solid var(--line-strong); }
 .stat strong { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; }
-.stat.ordered { border-top-color: var(--ordered); } .stat.in_progress { border-top-color: var(--in_progress); } .stat.completed { border-top-color: var(--completed); }
+.stat.ordered { border-top-color: var(--ordered); } .stat.in_progress { border-top-color: var(--in_progress); } .stat.completed { border-top-color: var(--completed); } .stat.cancelled { border-top-color: var(--danger); }
+.queue-full-note { color: #ffb340; font-size: 13px; margin: 0 0 6px; }
+.queue-status { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 20px; }
+.queue-status h2 { font-size: 18px; margin-bottom: 8px; }
+.queue-status p:last-child { margin-bottom: 0; }
+.queue-management { padding: 24px; margin-bottom: 24px; }
+.queue-heading, .queue-option-head, .queue-slot-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.queue-heading { margin-bottom: 18px; }
+.queue-heading .h2 { margin: 0 0 4px; }
+.queue-option { border-top: 1px solid var(--line); padding: 18px 0; }
+.queue-option-head h3 { margin: 0; }
+.queue-next { margin: 8px 0 14px; }
+.queue-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.queue-slot { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; }
+.queue-slot p { margin: 8px 0 0; }
+.queue-slot .pill { margin-left: 0; }
+.queue-slot-title .pill.sent { color: var(--completed); }
+.slot-expiry { margin-top: 12px; }
+.slot-expiry label { display: block; margin-bottom: 6px; }
+.slot-controls { display: flex; gap: 8px; }
+.slot-controls input { min-width: 0; }
+.queue-slot > .btn { margin-top: 12px; }
+.queue-waiting { margin-top: 16px; }
+.queue-waiting h4 { margin: 0 0 8px; font-size: 14px; }
+.queue-waiting ol { list-style: none; margin: 0; padding: 0; }
+.queue-waiting li { display: flex; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding: 8px 0; font-size: 13px; }
 .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
 .toolbar select { width: auto; min-width: 160px; }
 .search { position: relative; flex: 1 1 240px; }
@@ -210,6 +235,10 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
 @media (max-width: 800px) {
   .options { grid-template-columns: 1fr; }
   .stats { grid-template-columns: repeat(2, 1fr); }
+  .queue-management { padding: 18px; }
+  .queue-option-head, .queue-heading { align-items: flex-start; flex-direction: column; }
+  .queue-slots { grid-template-columns: 1fr; }
+  .queue-waiting li { align-items: flex-start; flex-direction: column; }
   .row { flex-direction: column; gap: 0; }
   .maintenance-settings { align-items: flex-start; flex-direction: column; }
   .details.two { grid-template-columns: 1fr; }

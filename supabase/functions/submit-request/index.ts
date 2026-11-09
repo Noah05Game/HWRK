@@ -44,6 +44,7 @@ Deno.serve(handler(async (req, db) => {
     const m = error.message ?? '';
     if (m.includes('duplicate_request')) throw new HttpError(409, 'You already have an open request of this type.', 'duplicate');
     if (m.includes('invalid_option')) throw new HttpError(400, 'This request type is not available.', 'validation', 'optionKey');
+    if (m.includes('option_full')) throw new HttpError(409, 'This request type is temporarily full. It will become available when an existing request is completed or cancelled.', 'option_full');
     if (m.includes('maintenance_mode')) throw new HttpError(503, 'We’re down for maintenance. Be back soon.', 'maintenance_mode');
     if (m.includes('site_settings_not_configured')) throw new HttpError(503, 'Request availability could not be verified. Please try again later.', 'maintenance_unavailable');
     if (m.includes('terms_not_configured')) throw new HttpError(409, 'Terms and conditions are not configured yet.', 'terms_not_configured');
@@ -53,12 +54,17 @@ Deno.serve(handler(async (req, db) => {
   }
   const row = Array.isArray(data) ? data[0] : data;
 
+  const { data: metrics, error: metricsErr } = await db.rpc('get_request_queue_metrics', { p_request_id: row.out_id });
+  if (metricsErr) throw new Error(`Could not load queue position: ${metricsErr.message}`);
+  const queue = Array.isArray(metrics) ? metrics[0] : metrics;
+
   const { data: full, error: loadErr } = await db.from('requests').select(REQUEST_COLUMNS).eq('id', row.out_id).single();
   if (loadErr || !full) throw new Error('could not load created request');
   const emailSent = await sendRequestEmail(db, full, 'request_created', undefined, token);
 
   return {
     ticketReference: row.out_ticket, optionName: row.out_option, dueDate: due, status: 'ordered',
-    trackingToken: token, emailSent,
+    trackingToken: token, emailSent, queuePosition: queue?.queue_position ?? null,
+    estimatedSlotAt: queue?.estimated_slot_at ?? null, slotReserved: queue?.slot_reserved ?? false,
   };
 }));

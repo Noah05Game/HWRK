@@ -1,7 +1,7 @@
 import { Check, TriangleAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Modal } from './Modal';
-import { fmtDate } from '../lib/format';
+import { fmtDate, fmtDateTime } from '../lib/format';
 import type { SubmitResult } from '../types';
 
 export function Confirmation({ result, onClose }: { result: SubmitResult; onClose: () => void }) {
@@ -12,6 +12,9 @@ export function Confirmation({ result, onClose }: { result: SubmitResult; onClos
         <div><dt>Ticket</dt><dd className="ref">{result.ticketReference}</dd></div>
         <div><dt>Request</dt><dd>{result.optionName}</dd></div>
         <div><dt>Requested due date</dt><dd>{fmtDate(result.dueDate)}</dd></div>
+        {result.slotReserved
+          ? <div><dt>Queue</dt><dd>Slot reserved · waiting for processing to start</dd></div>
+          : result.queuePosition !== null && <div><dt>Queue</dt><dd>Position #{result.queuePosition} · estimated slot {result.estimatedSlotAt ? fmtDateTime(result.estimatedSlotAt) : 'not available'}</dd></div>}
       </dl>
       {result.emailSent ? (
         <p className="muted">A confirmation email with your private tracking link has been sent.</p>

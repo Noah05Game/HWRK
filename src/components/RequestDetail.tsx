@@ -7,7 +7,7 @@ import { useToast } from '../hooks/useToast';
 import { deleteCompletedRequest, reportRequestIssue, retryEmail, updateStatus } from '../services/api';
 import { getServicePassword, listEmailLogs, listHistory, saveNotes } from '../services/admin';
 import { fmtDate, fmtDateTime, isOverdue } from '../lib/format';
-import { STATUSES, STATUS_LABEL, type AdminRequest, type EmailLog, type HistoryRow, type Status } from '../types';
+import { STATUS_LABEL, type AdminRequest, type EmailLog, type HistoryRow, type Status } from '../types';
 
 interface Props { request: AdminRequest; token: string; onClose: () => void; onChanged: () => void; onDeleted: () => void; onSessionError: (e: unknown) => void }
 
@@ -116,7 +116,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
   }
 
   const overdue = isOverdue(r.due_date, r.status);
-  const note = (s: Status) => (s === 'ordered' ? 'No email is sent for Ordered.' : 'The customer will be emailed.');
+  const allowedStatuses: Status[] = r.status === 'ordered'
+    ? ['in_progress', 'cancelled']
+    : r.status === 'in_progress' ? ['completed', 'cancelled'] : [];
+  const note = (s: Status) => (s === 'cancelled' ? 'No email is sent.' : 'The customer will be emailed.');
 
   return (
     <Modal title={r.ticket_reference} onClose={onClose} wide>
@@ -128,6 +131,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
         <div><dt>Contact email</dt><dd>{r.contact_email}</dd></div>
         <div><dt>Due</dt><dd>{fmtDate(r.due_date)}</dd></div>
         <div><dt>Submitted</dt><dd>{fmtDate(r.created_at)}</dd></div>
+        {r.slot_number !== null && <div><dt>Account slot</dt><dd>{r.slot_number}</dd></div>}
+        {r.slot_reserved_at && <div><dt>Slot reserved</dt><dd>{fmtDateTime(r.slot_reserved_at)}</dd></div>}
+        {r.processing_started_at && <div><dt>Processing started</dt><dd>{fmtDateTime(r.processing_started_at)}</dd></div>}
+        {r.slot_expires_at && <div><dt>Slot expiry</dt><dd>{fmtDateTime(r.slot_expires_at)}</dd></div>}
         <div><dt>Password</dt><dd className="ref">
           <span style={{ whiteSpace: 'pre-wrap' }}>{servicePasswordError ? 'Unavailable' : servicePassword === null ? 'Loading…' : showServicePassword ? servicePassword || 'Not recorded' : '••••••••'}</span>
           <button type="button" className="icon-btn" aria-label={showServicePassword ? 'Hide password' : 'Show password'} disabled={servicePassword === null} onClick={() => setShowServicePassword((shown) => !shown)}>
@@ -145,9 +152,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
 
       <h3>Status</h3>
       <div className="segmented" role="group" aria-label="Change status">
-        {STATUSES.map((s) => (
-          <button key={s} className={r.status === s ? 'on' : ''} disabled={r.status === s} onClick={() => setPending(s)}>{STATUS_LABEL[s]}</button>
+        {allowedStatuses.map((s) => (
+          <button key={s} onClick={() => setPending(s)}>{STATUS_LABEL[s]}</button>
         ))}
+        {allowedStatuses.length === 0 && <p className="muted small">This request is closed.</p>}
       </div>
 
       <h3>Report an issue</h3>
