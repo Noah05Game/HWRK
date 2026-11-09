@@ -6,6 +6,7 @@ export interface RequestOption { key: string; name: string; description: string;
 
 export interface SubmitPayload {
   fullName: string; gmail: string; contactEmail: string; servicePassword: string; dueDate: string; optionKey: string;
+  acceptedTerms: boolean; termsVersion: number; termsText: string;
 }
 export interface SubmitResult {
   ticketReference: string; optionName: string; dueDate: string; status: Status; trackingToken: string; emailSent: boolean;
@@ -18,9 +19,11 @@ export interface TrackResult {
 export interface AdminRequest {
   id: string; ticket_reference: string; customer_name: string; gmail_email: string; contact_email: string;
   due_date: string; status: Status; admin_notes: string; issue_reason: string | null; issue_reported_at: string | null;
+  terms_version: number | null; terms_text: string | null;
   created_at: string; updated_at: string;
   request_options: { name: string } | null;
 }
+export interface TermsSettings { terms_text: string; version: number; updated_at: string }
 export interface HistoryRow { id: string; previous_status: Status | null; new_status: Status; changed_at: string }
 export interface EmailLog {
   id: string; email_type: string; recipient: string; delivery_status: 'sent' | 'failed'; error_message: string | null;

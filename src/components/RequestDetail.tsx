@@ -136,6 +136,12 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
         </dd></div>
         <div><dt>Updated</dt><dd>{fmtDateTime(r.updated_at)}</dd></div>
       </dl>
+      {r.terms_version !== null && r.terms_text !== null && (
+        <details className="terms-record">
+          <summary>Terms accepted (version {r.terms_version})</summary>
+          <div className="terms-copy">{r.terms_text}</div>
+        </details>
+      )}
 
       <h3>Status</h3>
       <div className="segmented" role="group" aria-label="Change status">

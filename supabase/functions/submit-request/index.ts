@@ -15,6 +15,8 @@ Deno.serve(handler(async (req, db) => {
   const contact = str(b.contactEmail, 254).toLowerCase();
   const servicePassword = typeof b.servicePassword === 'string' ? b.servicePassword : '';
   const optionKey = str(b.optionKey, 40);
+  const termsVersion = b.termsVersion;
+  const termsText = typeof b.termsText === 'string' ? b.termsText : '';
 
   const fail = (field: string, msg: string): never => { throw new HttpError(400, msg, 'validation', field); };
   if (name.length < 2 || name.length > 100) fail('fullName', 'Enter your full name.');
@@ -22,6 +24,10 @@ Deno.serve(handler(async (req, db) => {
   if (!EMAIL_RE.test(contact) || contact.length > 254) fail('contactEmail', 'Enter a valid contact email address.');
   if (!servicePassword.length || servicePassword.length > 256) fail('servicePassword', 'Enter the password you were given (up to 256 characters).');
   if (!/^[a-z0-9-]{1,40}$/.test(optionKey)) fail('optionKey', 'Choose a request type.');
+  if (b.acceptedTerms !== true) fail('acceptedTerms', 'You must agree to the terms and conditions before submitting.');
+  if (typeof termsVersion !== 'number' || !Number.isInteger(termsVersion) || termsVersion < 1 || !termsText.trim() || termsText.length > 20000) {
+    fail('acceptedTerms', 'Review and agree to the current terms and conditions.');
+  }
   const due = validateDueDate(b.dueDate);
 
   const token = randomToken();
@@ -31,12 +37,16 @@ Deno.serve(handler(async (req, db) => {
     p_service_password: servicePassword,
     p_option_key: optionKey, p_due: due,
     p_token_hash: await sha256(token), p_token_enc: await encryptToken(token),
+    p_terms_version: termsVersion, p_terms_text: termsText, p_terms_accepted: b.acceptedTerms,
   });
 
   if (error) {
     const m = error.message ?? '';
     if (m.includes('duplicate_request')) throw new HttpError(409, 'You already have an open request of this type.', 'duplicate');
     if (m.includes('invalid_option')) throw new HttpError(400, 'This request type is not available.', 'validation', 'optionKey');
+    if (m.includes('terms_not_configured')) throw new HttpError(409, 'Terms and conditions are not configured yet.', 'terms_not_configured');
+    if (m.includes('terms_not_accepted')) throw new HttpError(400, 'You must agree to the terms and conditions before submitting.', 'terms_not_accepted');
+    if (m.includes('terms_changed')) throw new HttpError(409, 'The terms have changed. Review and agree to the current terms before submitting.', 'terms_changed');
     throw new Error(`create_request failed: ${m}`);
   }
   const row = Array.isArray(data) ? data[0] : data;

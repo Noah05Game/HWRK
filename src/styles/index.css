@@ -89,10 +89,25 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: rgba(25
 input[aria-invalid='true'] { border-color: var(--danger); }
 input::placeholder, textarea::placeholder { color: #636366; }
 input[type='date'] { color-scheme: dark; }
+input[type='checkbox'] { width: 18px; height: 18px; flex: none; accent-color: #fff; padding: 0; }
 select { appearance: none; padding-right: 32px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%2398989d' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
 select option { background: var(--surface); }
 .error-text { color: var(--danger); font-size: 13px; margin: 6px 0 0; }
 .row { display: flex; gap: 16px; }
+.terms-acceptance { margin-top: 20px; }
+.terms-acceptance h3 { margin-top: 0; }
+.terms-copy { max-height: 180px; overflow-y: auto; overflow-wrap: anywhere; white-space: pre-wrap; padding: 12px; border: 1px solid var(--line); border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.04); font-size: 13px; }
+.terms-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; font-size: 14px; cursor: pointer; }
+.terms-check input { margin-top: 2px; }
+.terms-record { margin: 20px 0; }
+.terms-record summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.terms-record .terms-copy { margin-top: 10px; }
+.terms-settings { padding: 24px; margin-bottom: 20px; }
+.terms-settings .h2 { margin-bottom: 8px; }
+.terms-settings textarea { margin-top: 6px; }
+.field-label { display: block; font-size: 13px; color: var(--muted); margin-top: 16px; }
+.terms-editor-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+.success-text { color: var(--completed); font-size: 13px; margin-top: 8px; }
 .row.three { align-items: flex-end; flex-wrap: wrap; }
 .row.three .field { flex: 1 1 140px; }
 .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
