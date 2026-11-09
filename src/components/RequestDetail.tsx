@@ -157,14 +157,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
         </button>
       </div>
 
-      {r.status === 'completed' && (
-        <>
-          <h3>Delete order</h3>
-          <div className="actions start">
-            <button className="btn danger sm" onClick={() => setConfirmDelete(true)}><Trash2 size={15} /> Delete completed order</button>
-          </div>
-        </>
-      )}
+      <h3>Delete order</h3>
+      <div className="actions start">
+        <button className="btn danger sm" onClick={() => setConfirmDelete(true)}><Trash2 size={15} /> Delete order</button>
+      </div>
 
       <h3>Private notes</h3>
       <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} maxLength={5000} placeholder="Only visible to admins" />
@@ -206,7 +202,7 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
           confirmLabel="Change status" busy={busy} onConfirm={confirmStatus} onCancel={() => setPending(null)} />
       )}
       {confirmDelete && (
-        <ConfirmDialog title="Delete completed order?" message={`${r.ticket_reference} and its history and email logs will be permanently deleted. This cannot be undone.`}
+        <ConfirmDialog title="Delete order?" message={`${r.ticket_reference} and its history and email logs will be permanently deleted. This cannot be undone.`}
           confirmLabel="Delete order" busy={deleting} onConfirm={removeCompletedRequest} onCancel={() => setConfirmDelete(false)} />
       )}
     </Modal>
