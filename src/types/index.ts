@@ -24,6 +24,7 @@ export interface AdminRequest {
   request_options: { name: string } | null;
 }
 export interface TermsSettings { terms_text: string; version: number; updated_at: string }
+export interface MaintenanceSettings { maintenance_mode: boolean; updated_at: string }
 export interface HistoryRow { id: string; previous_status: Status | null; new_status: Status; changed_at: string }
 export interface EmailLog {
   id: string; email_type: string; recipient: string; delivery_status: 'sent' | 'failed'; error_message: string | null;

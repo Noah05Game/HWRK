@@ -44,6 +44,8 @@ Deno.serve(handler(async (req, db) => {
     const m = error.message ?? '';
     if (m.includes('duplicate_request')) throw new HttpError(409, 'You already have an open request of this type.', 'duplicate');
     if (m.includes('invalid_option')) throw new HttpError(400, 'This request type is not available.', 'validation', 'optionKey');
+    if (m.includes('maintenance_mode')) throw new HttpError(503, 'We’re down for maintenance. Be back soon.', 'maintenance_mode');
+    if (m.includes('site_settings_not_configured')) throw new HttpError(503, 'Request availability could not be verified. Please try again later.', 'maintenance_unavailable');
     if (m.includes('terms_not_configured')) throw new HttpError(409, 'Terms and conditions are not configured yet.', 'terms_not_configured');
     if (m.includes('terms_not_accepted')) throw new HttpError(400, 'You must agree to the terms and conditions before submitting.', 'terms_not_accepted');
     if (m.includes('terms_changed')) throw new HttpError(409, 'The terms have changed. Review and agree to the current terms before submitting.', 'terms_changed');

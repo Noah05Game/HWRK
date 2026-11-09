@@ -73,6 +73,8 @@ a { color: inherit; }
 .btn.ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.11); }
 .btn.danger { background: rgba(255, 69, 58, 0.12); color: var(--danger); border-color: rgba(255, 69, 58, 0.35); }
 .btn.danger:hover:not(:disabled) { background: rgba(255, 69, 58, 0.2); }
+.btn.warning { background: rgba(255, 159, 10, 0.16); color: #ffb340; border-color: rgba(255, 159, 10, 0.42); }
+.btn.warning:hover:not(:disabled) { background: rgba(255, 159, 10, 0.24); }
 .btn.accent { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text); border-color: color-mix(in srgb, var(--accent) 50%, transparent); align-self: flex-start; }
 .btn.accent:hover { background: var(--accent); color: #000; }
 .btn.primary[style*='--accent'] { background: var(--accent); color: #000; }
@@ -108,6 +110,14 @@ select option { background: var(--surface); }
 .field-label { display: block; font-size: 13px; color: var(--muted); margin-top: 16px; }
 .terms-editor-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
 .success-text { color: var(--completed); font-size: 13px; margin-top: 8px; }
+.maintenance-settings { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 24px; margin-bottom: 20px; }
+.maintenance-settings .h2 { margin-bottom: 8px; }
+.maintenance-state { color: var(--completed); font-size: 13px; margin: 8px 0 0; }
+.maintenance-state.active { color: #ffb340; }
+.maintenance-title { color: #ffb340; }
+.maintenance-banner { border: 1px solid rgba(255, 159, 10, 0.5); background: rgba(255, 159, 10, 0.12); color: #ffd18a; border-radius: var(--radius); padding: 20px 24px; margin: -16px 0 28px; }
+.maintenance-banner h2 { font-size: 18px; margin-bottom: 4px; }
+.maintenance-banner p { margin: 0; }
 .row.three { align-items: flex-end; flex-wrap: wrap; }
 .row.three .field { flex: 1 1 140px; }
 .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
@@ -201,6 +211,7 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
   .options { grid-template-columns: 1fr; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .row { flex-direction: column; gap: 0; }
+  .maintenance-settings { align-items: flex-start; flex-direction: column; }
   .details.two { grid-template-columns: 1fr; }
   .container { padding: 28px 16px 72px; }
   .topbar { padding: 16px; }

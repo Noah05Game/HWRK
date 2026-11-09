@@ -4,6 +4,7 @@ import { Loader2, LogOut, Search } from 'lucide-react';
 import { AdminLayout } from '../layouts/AdminLayout';
 import { StatusBadge } from '../components/StatusBadge';
 import { RequestDetail } from '../components/RequestDetail';
+import { MaintenanceSettings } from '../components/MaintenanceSettings';
 import { TermsSettings } from '../components/TermsSettings';
 import { useToast } from '../hooks/useToast';
 import { supabase } from '../lib/supabase';
@@ -79,7 +80,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
 
   return (
     <AdminLayout actions={actions}>
-      {authorised && <TermsSettings />}
+      {authorised && <><MaintenanceSettings /><TermsSettings /></>}
       <section className="stats">
         {statCards.map(([label, n, k]) => (
           <div key={k} className={`stat glass ${k}`}><span className="muted small">{label}</span><strong>{n}</strong></div>
