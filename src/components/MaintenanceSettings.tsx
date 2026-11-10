@@ -39,18 +39,18 @@ export function MaintenanceSettings() {
   return (
     <section className="glass maintenance-settings">
       <div>
-        <h2 className="h2">Site maintenance</h2>
+        <h2 className="h2">Lockdown mode</h2>
         <p className="muted small">
-          When enabled, visitors see a maintenance notice and cannot submit new requests. Existing orders and admin tools remain available.
+          When enabled, visitors see the domain listing instead of the site, and new requests are blocked. The admin panel remains available so you can turn it off.
         </p>
         {settings && <p className={`maintenance-state ${settings.maintenance_mode ? 'active' : ''}`} role="status">
-          {settings.maintenance_mode ? 'Maintenance mode is on.' : 'The site is accepting requests.'}
+          {settings.maintenance_mode ? 'Lockdown mode is on.' : 'Lockdown mode is off.'}
         </p>}
       </div>
       {loading ? <Loader2 className="spin" /> : (
         <button className={`btn ${settings?.maintenance_mode ? 'primary' : 'warning'}`}
           onClick={toggle} disabled={!settings || saving} aria-pressed={settings?.maintenance_mode ?? false}>
-          {saving ? <><Loader2 size={15} className="spin" /> Updating</> : settings?.maintenance_mode ? 'Turn maintenance off' : 'Turn maintenance on'}
+          {saving ? <><Loader2 size={15} className="spin" /> Updating</> : settings?.maintenance_mode ? 'Turn lockdown off' : 'Turn lockdown on'}
         </button>
       )}
       {error && <p className="error-text" role="alert">{error} <button className="btn ghost sm" onClick={load} disabled={loading}>Retry</button></p>}

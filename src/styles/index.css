@@ -118,6 +118,15 @@ select option { background: var(--surface); }
 .maintenance-banner { border: 1px solid rgba(255, 159, 10, 0.5); background: rgba(255, 159, 10, 0.12); color: #ffd18a; border-radius: var(--radius); padding: 20px 24px; margin: -16px 0 28px; }
 .maintenance-banner h2 { font-size: 18px; margin-bottom: 4px; }
 .maintenance-banner p { margin: 0; }
+.lockdown-status { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
+.lockdown-status h1 { font-size: clamp(24px, 5vw, 36px); }
+.lockdown-status p { color: var(--muted); }
+.lockdown-page { min-height: 100vh; display: grid; place-items: center; overflow: hidden; background: #1b2468; }
+.lockdown-artwork { position: relative; width: min(100vw, 204.29vh); container-type: inline-size; }
+.lockdown-artwork img { display: block; width: 100%; height: auto; }
+.lockdown-domain { position: absolute; left: 16.25%; top: 31.87%; width: 38.75%; height: 8.28%; display: flex; align-items: center; padding: 0 1.6%; overflow: hidden; background: #fff; color: #2b2b2d; font-size: clamp(12px, 1.55cqw, 31px); font-weight: 700; white-space: nowrap; }
+.lockdown-price { position: absolute; left: 74.75%; top: 30.5%; width: 8.3%; height: 7%; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.4%; overflow: hidden; background: #f9f9f9; color: #2b2b2d; font-size: clamp(14px, 2.05cqw, 41px); font-weight: 700; white-space: nowrap; }
+.lockdown-mobile { display: none; }
 .row.three { align-items: flex-end; flex-wrap: wrap; }
 .row.three .field { flex: 1 1 140px; }
 .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
@@ -250,5 +259,16 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
   table.requests tr { background: rgba(28, 28, 30, 0.72); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; padding: 6px 0; }
   table.requests td { display: flex; justify-content: space-between; gap: 12px; border: 0; padding: 7px 16px; white-space: normal; text-align: right; }
   table.requests td::before { content: attr(data-label); color: var(--muted); text-align: left; }
+}
+@media (max-width: 700px) {
+  .lockdown-page { display: block; padding: 24px; background: radial-gradient(circle at 85% 20%, #713eff, transparent 42%), linear-gradient(145deg, #1b2468, #394bff); }
+  .lockdown-artwork { display: none; }
+  .lockdown-mobile { display: block; width: min(100%, 440px); margin: min(20vh, 120px) auto 0; padding: 28px 24px; border-radius: 16px; background: #fff; color: #26262a; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25); }
+  .lockdown-brand { margin: 0 0 42px; color: #263576; font-size: 19px; font-weight: 700; letter-spacing: 0.04em; }
+  .lockdown-eyebrow { margin-bottom: 8px; color: #67676b; font-size: 14px; }
+  .lockdown-mobile h1 { overflow-wrap: anywhere; font-size: clamp(25px, 7vw, 34px); }
+  .lockdown-mobile-price { display: flex; justify-content: space-between; gap: 16px; margin-top: 32px; padding: 20px 0; border-top: 1px solid #e7e7e9; border-bottom: 1px solid #e7e7e9; font-size: 18px; }
+  .lockdown-mobile-price strong { font-size: 24px; }
+  .lockdown-mobile-footer { margin: 24px 0 0; color: #67676b; font-size: 13px; text-align: center; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
