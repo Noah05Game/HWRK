@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ToastProvider } from './hooks/useToast';
+import { SiteAttribution } from './components/SiteAttribution';
 import Landing from './pages/Landing';
 import Track from './pages/Track';
 import Admin from './pages/Admin';
@@ -61,9 +62,12 @@ function AppRoutes() {
 export default function App() {
   return (
     <ToastProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-        <AppRoutes />
-      </BrowserRouter>
+      <>
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+          <AppRoutes />
+        </BrowserRouter>
+        <SiteAttribution />
+      </>
     </ToastProvider>
   );
 }

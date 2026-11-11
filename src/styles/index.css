@@ -118,6 +118,11 @@ select option { background: var(--surface); }
 .maintenance-banner { border: 1px solid rgba(255, 159, 10, 0.5); background: rgba(255, 159, 10, 0.12); color: #ffd18a; border-radius: var(--radius); padding: 20px 24px; margin: -16px 0 28px; }
 .maintenance-banner h2 { font-size: 18px; margin-bottom: 4px; }
 .maintenance-banner p { margin: 0; }
+.site-attribution { position: fixed; right: 16px; bottom: 16px; z-index: 45; }
+.site-attribution button { display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 1px solid var(--line-strong); border-radius: 50%; background: rgba(28, 28, 30, 0.88); color: var(--muted); cursor: help; }
+.site-attribution button:hover, .site-attribution button:focus-visible { color: var(--text); border-color: rgba(255, 255, 255, 0.4); }
+.site-attribution [role='tooltip'] { position: absolute; right: 0; bottom: 42px; width: max-content; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--elevated); color: var(--text); font-size: 13px; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 0.15s, transform 0.15s, visibility 0.15s; visibility: hidden; }
+.site-attribution:hover [role='tooltip'], .site-attribution:focus-within [role='tooltip'] { opacity: 1; transform: translateY(0); visibility: visible; }
 .lockdown-status { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; }
 .lockdown-status h1 { font-size: clamp(24px, 5vw, 36px); }
 .lockdown-status p { color: var(--muted); }

@@ -22,6 +22,7 @@ Deno.serve(handler(async (req, db) => {
   if (name.length < 2 || name.length > 100) fail('fullName', 'Enter your full name.');
   if (!EMAIL_RE.test(gmail) || gmail.length > 254) fail('gmail', 'Enter a valid email address.');
   if (!EMAIL_RE.test(contact) || contact.length > 254) fail('contactEmail', 'Enter a valid contact email address.');
+  if (gmail === contact) fail('contactEmail', 'Use a different email address from your school email.');
   if (!servicePassword.length || servicePassword.length > 256) fail('servicePassword', 'Enter the password you were given (up to 256 characters).');
   if (!/^[a-z0-9-]{1,40}$/.test(optionKey)) fail('optionKey', 'Choose a request type.');
   if (b.acceptedTerms !== true) fail('acceptedTerms', 'You must agree to the terms and conditions before submitting.');

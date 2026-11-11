@@ -44,6 +44,9 @@ export function RequestForm({ option, onClose, onSuccess }: Props) {
     if (v.fullName.trim().length < 2) e.fullName = 'Enter your full name.';
     if (!EMAIL_RE.test(v.gmail.trim())) e.gmail = 'Enter a valid email address.';
     if (!EMAIL_RE.test(v.contactEmail.trim())) e.contactEmail = 'Enter a valid contact email address.';
+    else if (EMAIL_RE.test(v.gmail.trim()) && v.gmail.trim().toLowerCase() === v.contactEmail.trim().toLowerCase()) {
+      e.contactEmail = 'Use a different email address from your school email.';
+    }
     if (!v.servicePassword.length) e.servicePassword = 'Enter the password you were given.';
     else if (v.servicePassword.length > 256) e.servicePassword = 'Password must be 256 characters or fewer.';
     if (!v.dueDate) e.dueDate = 'Choose a completion date.';
