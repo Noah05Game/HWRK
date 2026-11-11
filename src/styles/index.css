@@ -118,6 +118,19 @@ select option { background: var(--surface); }
 .maintenance-banner { border: 1px solid rgba(255, 159, 10, 0.5); background: rgba(255, 159, 10, 0.12); color: #ffd18a; border-radius: var(--radius); padding: 20px 24px; margin: -16px 0 28px; }
 .maintenance-banner h2 { font-size: 18px; margin-bottom: 4px; }
 .maintenance-banner p { margin: 0; }
+.announcement-settings { padding: 24px; margin-bottom: 20px; }
+.announcement-settings .h2 { margin-bottom: 8px; }
+.announcement-settings textarea { margin-top: 6px; }
+.announcement-toggle { display: flex; align-items: center; gap: 10px; margin-top: 18px; cursor: pointer; }
+.announcement-toggle input { margin: 0; }
+.announcement-colors { display: flex; gap: 16px; margin-top: 16px; }
+.announcement-colors .field { margin-bottom: 0; }
+.announcement-colors input[type='color'] { width: 64px; height: 40px; padding: 4px; cursor: pointer; }
+.announcement-preview-label { margin-top: 20px; }
+.announcement-banner { padding: 18px 22px; border: 1px solid currentColor; border-radius: var(--radius); margin: 20px 0 28px; }
+.announcement-banner h2, .announcement-banner h3 { font-size: 18px; margin-bottom: 4px; }
+.announcement-banner p { margin: 0; white-space: pre-wrap; }
+.announcement-preview { margin: 8px 0 0; }
 .site-attribution { position: fixed; right: 16px; bottom: 16px; z-index: 45; }
 .site-attribution button { display: grid; width: 34px; height: 34px; place-items: center; padding: 0; border: 1px solid var(--line-strong); border-radius: 50%; background: rgba(28, 28, 30, 0.88); color: var(--muted); cursor: help; }
 .site-attribution button:hover, .site-attribution button:focus-visible { color: var(--text); border-color: rgba(255, 255, 255, 0.4); }
@@ -255,6 +268,8 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
   .queue-waiting li { align-items: flex-start; flex-direction: column; }
   .row { flex-direction: column; gap: 0; }
   .maintenance-settings { align-items: flex-start; flex-direction: column; }
+  .announcement-settings { padding: 18px; }
+  .announcement-colors { flex-wrap: wrap; }
   .details.two { grid-template-columns: 1fr; }
   .container { padding: 28px 16px 72px; }
   .topbar { padding: 16px; }

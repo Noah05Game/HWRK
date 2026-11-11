@@ -88,6 +88,7 @@ npm run dev
 - **Tracking**: the existing `/t/<token>` route is unchanged. The token is 256 bits of random data; only its SHA-256 hash is used for lookup. The page displays queue position, people ahead, estimated wait, reservation details and processing timestamps, and refreshes queue state every 30 seconds.
 - **Admin queue controls**: the existing admin dashboard shows per-option counts, both slots, cooldowns and FIFO queues. Admins can start, complete or cancel requests, manually release an active slot, and adjust its expiry.
 - **Lockdown mode**: the admin dashboard can replace all public pages with the configured domain listing and block new requests. The `/admin` route remains available so an administrator can turn lockdown off.
+- **Main page announcement**: admins can configure and toggle a public banner with custom title, message, background colour and text colour.
 - **Status changes**: `admin-update-status` verifies the admin, then a SQL function updates the status and writes `status_history` in one transaction. Email is sent only when the status actually changed, and only for In Progress and Completed.
 - **Issue reports**: admins can enter a reason in request details. The customer is emailed using the standard template, and the tracking page displays the latest issue and asks them to submit another request.
 - **Order cleanup**: admins can permanently delete requests at any status from their details. Their history and email logs are deleted with them. Deleting a request does not interrupt an already-started slot cooldown.

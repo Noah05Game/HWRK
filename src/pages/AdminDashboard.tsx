@@ -5,6 +5,7 @@ import { AdminLayout } from '../layouts/AdminLayout';
 import { StatusBadge } from '../components/StatusBadge';
 import { RequestDetail } from '../components/RequestDetail';
 import { MaintenanceSettings } from '../components/MaintenanceSettings';
+import { AnnouncementSettings } from '../components/AnnouncementSettings';
 import { QueueManagement } from '../components/QueueManagement';
 import { TermsSettings } from '../components/TermsSettings';
 import { useToast } from '../hooks/useToast';
@@ -81,7 +82,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
 
   return (
     <AdminLayout actions={actions}>
-      {authorised && <><MaintenanceSettings /><TermsSettings /></>}
+      {authorised && <><MaintenanceSettings /><AnnouncementSettings /><TermsSettings /></>}
       {authorised && rows && <QueueManagement requests={rows} onChanged={load} />}
       <section className="stats">
         {statCards.map(([label, n, k]) => (

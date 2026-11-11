@@ -37,6 +37,14 @@ export interface OptionSlot {
 }
 export interface TermsSettings { terms_text: string; version: number; updated_at: string }
 export interface MaintenanceSettings { maintenance_mode: boolean; updated_at: string }
+export interface AnnouncementSettings {
+  announcement_enabled: boolean;
+  announcement_title: string;
+  announcement_body: string;
+  announcement_background_color: string;
+  announcement_text_color: string;
+  updated_at: string;
+}
 export interface HistoryRow { id: string; previous_status: Status | null; new_status: Status; changed_at: string }
 export interface EmailLog {
   id: string; email_type: string; recipient: string; delivery_status: 'sent' | 'failed'; error_message: string | null;
