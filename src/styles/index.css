@@ -218,6 +218,10 @@ select option { background: var(--surface); }
 .queue-slot p { margin: 8px 0 0; }
 .queue-slot .pill { margin-left: 0; }
 .queue-slot-title .pill.sent { color: var(--completed); }
+.replacement-slots { display: grid; gap: 10px; margin-top: 16px; }
+.replacement-slot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.replacement-slot p { margin: 4px 0 0; }
+.replacement-slot .btn { flex: none; }
 .slot-expiry { margin-top: 12px; }
 .slot-expiry label { display: block; margin-bottom: 6px; }
 .slot-controls { display: flex; gap: 8px; }
@@ -265,6 +269,7 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
   .queue-management { padding: 18px; }
   .queue-option-head, .queue-heading { align-items: flex-start; flex-direction: column; }
   .queue-slots { grid-template-columns: 1fr; }
+  .replacement-slot { align-items: flex-start; flex-direction: column; }
   .queue-waiting li { align-items: flex-start; flex-direction: column; }
   .row { flex-direction: column; gap: 0; }
   .maintenance-settings { align-items: flex-start; flex-direction: column; }

@@ -33,7 +33,7 @@ export interface OptionCapacity {
 export interface OptionSlot {
   id: string; option_id: string; slot_number: number; current_request_id: string | null;
   reserved_at: string | null; processing_started_at: string | null; expires_at: string | null;
-  request?: { ticket_reference: string; status: Status } | null;
+  request?: Pick<AdminRequest, 'id' | 'customer_name' | 'ticket_reference' | 'status'> | null;
 }
 export interface TermsSettings { terms_text: string; version: number; updated_at: string }
 export interface MaintenanceSettings { maintenance_mode: boolean; updated_at: string }

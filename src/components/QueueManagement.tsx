@@ -127,7 +127,7 @@ export function QueueManagement({ requests, onChanged }: Props) {
             </p>
             <div className="queue-slots">
               {optionSlots.map((slot) => {
-                const request = slot.current_request_id ? currentRequests.get(slot.current_request_id) : null;
+                const request = (slot.current_request_id ? currentRequests.get(slot.current_request_id) : null) ?? slot.request ?? null;
                 const isReserved = Boolean(slot.current_request_id && !slot.expires_at);
                 const occupied = Boolean(slot.current_request_id || (slot.expires_at && Date.parse(slot.expires_at) > Date.now()));
                 return (
@@ -136,7 +136,7 @@ export function QueueManagement({ requests, onChanged }: Props) {
                       <strong>Slot {slot.slot_number}</strong>
                       <span className={`pill ${occupied ? 'failed' : 'sent'}`}>{isReserved ? 'Reserved' : occupied ? 'Cooling down' : 'Available'}</span>
                     </div>
-                    {request && <p className="small">{request.ticket_reference} · {request.status === 'in_progress' ? 'In Progress' : 'Waiting to start'}</p>}
+                    {request && <p className="small">{request.customer_name} · {request.ticket_reference} · {request.status === 'in_progress' ? 'In Progress' : 'Waiting to start'}</p>}
                     {!request && slot.expires_at && <p className="small">Cooldown retained after request removal</p>}
                     {slot.reserved_at && <p className="muted small">{slot.processing_started_at ? `Started ${fmtDateTime(slot.processing_started_at)}` : `Reserved ${fmtDateTime(slot.reserved_at)}`}</p>}
                     {isReserved && <p className="muted small">Cancel this request to release its reservation.</p>}

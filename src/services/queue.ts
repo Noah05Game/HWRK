@@ -14,7 +14,20 @@ export async function getOptionSlots(): Promise<OptionSlot[]> {
     .order('option_id')
     .order('slot_number');
   if (error) throw new Error(error.message);
-  return data as OptionSlot[];
+  const slots = data as OptionSlot[];
+  const requestIds = slots.map((slot) => slot.current_request_id).filter((id): id is string => Boolean(id));
+  if (requestIds.length === 0) return slots;
+
+  const { data: requests, error: requestsError } = await supabase
+    .from('requests')
+    .select('id, customer_name, ticket_reference, status')
+    .in('id', requestIds);
+  if (requestsError) throw new Error(requestsError.message);
+  const requestsById = new Map(requests.map((request) => [request.id, request]));
+  return slots.map((slot) => ({
+    ...slot,
+    request: slot.current_request_id ? requestsById.get(slot.current_request_id) ?? null : null,
+  }));
 }
 
 export async function manageOptionSlot(slotId: string, action: 'release' | 'adjust_expiry', expiresAt?: string): Promise<void> {
@@ -24,4 +37,24 @@ export async function manageOptionSlot(slotId: string, action: 'release' | 'adju
     p_expires_at: expiresAt ?? null,
   });
   if (error) throw new Error(error.message);
+}
+
+export async function replaceReservedSlot(requestId: string, slotId: string, expectedRequestId: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_replace_reserved_slot', {
+    p_request_id: requestId,
+    p_slot_id: slotId,
+    p_expected_request_id: expectedRequestId,
+  });
+  if (error) {
+    if (error.message.includes('request_already_assigned')) {
+      throw new Error('This request has already been assigned a slot. Refresh and try again.');
+    }
+    if (error.message.includes('slot_changed')) {
+      throw new Error('That slot has been reassigned. Refresh the slots and try again.');
+    }
+    if (error.message.includes('slot_not_replaceable')) {
+      throw new Error('That slot is no longer available to replace. Refresh the slots and try again.');
+    }
+    throw new Error(error.message);
+  }
 }

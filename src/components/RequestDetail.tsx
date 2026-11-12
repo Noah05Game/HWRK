@@ -6,8 +6,9 @@ import { StatusBadge } from './StatusBadge';
 import { useToast } from '../hooks/useToast';
 import { deleteCompletedRequest, reportRequestIssue, retryEmail, updateStatus } from '../services/api';
 import { getServicePassword, listEmailLogs, listHistory, saveNotes } from '../services/admin';
+import { getOptionSlots, replaceReservedSlot } from '../services/queue';
 import { fmtDate, fmtDateTime, isOverdue } from '../lib/format';
-import { STATUS_LABEL, type AdminRequest, type EmailLog, type HistoryRow, type Status } from '../types';
+import { STATUS_LABEL, type AdminRequest, type EmailLog, type HistoryRow, type OptionSlot, type Status } from '../types';
 
 interface Props { request: AdminRequest; token: string; onClose: () => void; onChanged: () => void; onDeleted: () => void; onSessionError: (e: unknown) => void }
 
@@ -30,6 +31,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
   const [pending, setPending] = useState<Status | null>(null);
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState('');
+  const [replacementSlots, setReplacementSlots] = useState<OptionSlot[] | null>(null);
+  const [loadingReplacementSlots, setLoadingReplacementSlots] = useState(false);
+  const [pendingReplacementSlot, setPendingReplacementSlot] = useState<OptionSlot | null>(null);
+  const [replacingSlot, setReplacingSlot] = useState(false);
 
   const loadExtras = useCallback(async () => {
     try { const [h, l] = await Promise.all([listHistory(r.id), listEmailLogs(r.id)]); setHistory(h); setLogs(l); }
@@ -115,6 +120,38 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
     setRetrying('');
   }
 
+  async function openReplacementSlots() {
+    setLoadingReplacementSlots(true);
+    try {
+      const slots = await getOptionSlots();
+      setReplacementSlots(slots.filter((slot) => slot.option_id === r.option_id));
+    } catch (e) {
+      onSessionError(e);
+      toast('error', `Could not load account slots: ${(e as Error).message}`);
+    } finally {
+      setLoadingReplacementSlots(false);
+    }
+  }
+
+  async function confirmReplaceSlot() {
+    if (!pendingReplacementSlot) return;
+    setReplacingSlot(true);
+    try {
+      const currentRequestId = pendingReplacementSlot.request?.id;
+      if (!currentRequestId) throw new Error('The slot customer could not be verified. Refresh the slots and try again.');
+      await replaceReservedSlot(r.id, pendingReplacementSlot.id, currentRequestId);
+      toast('success', `Slot ${pendingReplacementSlot.slot_number} assigned to ${r.customer_name}. ${pendingReplacementSlot.request?.customer_name ?? 'The previous customer'} returned to the queue.`);
+      setPendingReplacementSlot(null);
+      setReplacementSlots(null);
+      onChanged();
+    } catch (e) {
+      onSessionError(e);
+      toast('error', `Could not replace the slot: ${(e as Error).message}`);
+    } finally {
+      setReplacingSlot(false);
+    }
+  }
+
   const overdue = isOverdue(r.due_date, r.status);
   const allowedStatuses: Status[] = r.status === 'ordered'
     ? ['in_progress', 'cancelled']
@@ -151,6 +188,16 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
       )}
 
       <h3>Status</h3>
+      {r.status === 'ordered' && r.slot_number === null && (
+        <>
+          <p className="muted small">This request is waiting without a reserved account slot.</p>
+          <div className="actions start">
+            <button className="btn ghost sm" onClick={openReplacementSlots} disabled={loadingReplacementSlots}>
+              {loadingReplacementSlots ? <><Loader2 size={14} className="spin" /> Loading slots</> : 'Replace slot'}
+            </button>
+          </div>
+        </>
+      )}
       <div className="segmented" role="group" aria-label="Change status">
         {allowedStatuses.map((s) => (
           <button key={s} onClick={() => setPending(s)}>{STATUS_LABEL[s]}</button>
@@ -218,6 +265,47 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
       {confirmDelete && (
         <ConfirmDialog title="Delete order?" message={`${r.ticket_reference} and its history and email logs will be permanently deleted. This cannot be undone.`}
           confirmLabel="Delete order" busy={deleting} onConfirm={removeCompletedRequest} onCancel={() => setConfirmDelete(false)} />
+      )}
+      {replacementSlots && (
+        <Modal title="Replace reserved slot" onClose={() => setReplacementSlots(null)} wide>
+          <p className="muted">
+            Choose a reserved slot to give to {r.customer_name}. The current customer will return to the waiting queue.
+            Slots that are already processing cannot be replaced.
+          </p>
+          {replacementSlots.length === 0 && <p className="muted">No account slots are configured for this request.</p>}
+          <div className="replacement-slots">
+            {replacementSlots.map((slot) => {
+              const canReplace = Boolean(slot.current_request_id && slot.request?.status === 'ordered'
+                && !slot.processing_started_at && !slot.expires_at);
+              return (
+                <div className="replacement-slot" key={slot.id}>
+                  <div>
+                    <strong>Slot {slot.slot_number}</strong>
+                    {slot.request
+                      ? <p className="small">{slot.request.customer_name} · {slot.request.ticket_reference} · {slot.request.status === 'in_progress' ? 'In Progress' : 'Waiting to start'}</p>
+                      : <p className="muted small">{slot.current_request_id ? 'Customer details unavailable' : slot.expires_at ? 'Cooling down' : 'Available'}</p>}
+                    {slot.processing_started_at && <p className="muted small">Started {fmtDateTime(slot.processing_started_at)}</p>}
+                  </div>
+                  {canReplace ? (
+                    <button className="btn warning sm" onClick={() => setPendingReplacementSlot(slot)}>
+                      Replace this slot
+                    </button>
+                  ) : <span className="muted small">{slot.expires_at ? 'Cooling down' : slot.current_request_id ? 'Cannot replace' : 'Available'}</span>}
+                </div>
+              );
+            })}
+          </div>
+          {pendingReplacementSlot && (
+            <ConfirmDialog
+              title={`Replace slot ${pendingReplacementSlot.slot_number}?`}
+              message={`${r.customer_name} will take this slot. ${pendingReplacementSlot.request?.customer_name ?? 'The current customer'} will return to the waiting queue.`}
+              confirmLabel="Replace slot"
+              busy={replacingSlot}
+              onConfirm={confirmReplaceSlot}
+              onCancel={() => setPendingReplacementSlot(null)}
+            />
+          )}
+        </Modal>
       )}
     </Modal>
   );
