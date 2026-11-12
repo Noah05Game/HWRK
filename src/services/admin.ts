@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { AdminAccount, AdminRequest, EmailLog, HistoryRow } from '../types';
+import type { AdminAccount, AdminRequest, EmailLog, HistoryRow, ProhibitedIp, SiteAnalyticsDay } from '../types';
 
 const COLS =
   'id, option_id, auth_user_id, ticket_reference, customer_name, gmail_email, contact_email, school_name, school_login_type, due_date, status, admin_notes, issue_reason, issue_reported_at, terms_version, terms_text, created_at, updated_at, slot_number, slot_reserved_at, processing_started_at, slot_expires_at, request_options(key, name)';
@@ -33,6 +33,20 @@ export async function banAccount(userId: string): Promise<void> {
 export async function unbanAccount(userId: string): Promise<void> {
   const { error } = await supabase.rpc('admin_unban_account', { p_user_id: userId });
   if (error) throw new Error(error.message);
+}
+export async function listProhibitedIps(): Promise<ProhibitedIp[]> {
+  return check(await supabase.rpc('admin_list_prohibited_ips')) as ProhibitedIp[];
+}
+export async function addProhibitedIp(ipAddress: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_add_prohibited_ip', { p_ip: ipAddress });
+  if (error) throw new Error(error.message);
+}
+export async function removeProhibitedIp(ipAddress: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_remove_prohibited_ip', { p_ip: ipAddress });
+  if (error) throw new Error(error.message);
+}
+export async function getSiteAnalytics(days = 30): Promise<SiteAnalyticsDay[]> {
+  return check(await supabase.rpc('admin_get_site_analytics', { p_days: days })) as SiteAnalyticsDay[];
 }
 export const getServicePassword = async (id: string) =>
   check<{ service_password: string }>(await supabase.from('requests').select('service_password').eq('id', id).single()).service_password;

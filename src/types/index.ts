@@ -28,6 +28,17 @@ export interface AdminAccount {
   created_at: string;
 }
 
+export interface ProhibitedIp {
+  ip_address: string;
+  added_at: string;
+}
+
+export interface SiteAnalyticsDay {
+  day: string;
+  page_views: number;
+  request_submissions: number;
+}
+
 export interface SubmitPayload {
   dueDate: string; optionKey: string; acceptedTerms: boolean; termsVersion: number; termsText: string;
 }

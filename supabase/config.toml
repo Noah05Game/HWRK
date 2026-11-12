@@ -3,6 +3,8 @@ project_id = "hwrk"
 # Request creation and personal Google verification require a valid user session.
 [functions.submit-request]
 verify_jwt = true
+[functions.site-gate]
+verify_jwt = false
 [functions.verify-google-account]
 verify_jwt = true
 [functions.track-request]

@@ -8,3 +8,7 @@ export const isConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 export const supabase = createClient(SUPABASE_URL || 'http://localhost', SUPABASE_ANON_KEY || 'missing', {
   auth: { persistSession: true, autoRefreshToken: true },
 });
+
+export const publicSupabase = createClient(SUPABASE_URL || 'http://localhost', SUPABASE_ANON_KEY || 'missing', {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+});

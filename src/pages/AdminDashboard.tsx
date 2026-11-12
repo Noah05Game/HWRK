@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { ClipboardList, Layers3, Loader2, LogOut, Megaphone, Search, Settings, Shield, Users } from 'lucide-react';
+import { Ban, BarChart3, ClipboardList, Layers3, Loader2, LogOut, Megaphone, Search, Settings, Shield, Users } from 'lucide-react';
 import { AdminLayout } from '../layouts/AdminLayout';
 import { StatusBadge } from '../components/StatusBadge';
 import { RequestDetail } from '../components/RequestDetail';
 import { AdminAccounts } from '../components/AdminAccounts';
+import { AdminLogs } from '../components/AdminLogs';
+import { ProhibitedIps } from '../components/ProhibitedIps';
 import { MaintenanceSettings } from '../components/MaintenanceSettings';
 import { AnnouncementSettings } from '../components/AnnouncementSettings';
 import { QueueManagement } from '../components/QueueManagement';
@@ -17,12 +19,14 @@ import { fmtDate, isOverdue } from '../lib/format';
 import { STATUSES, STATUS_LABEL, type AdminRequest, type Status } from '../types';
 
 type Sort = 'created_desc' | 'created_asc' | 'due_asc' | 'due_desc';
-type Section = 'requests' | 'queue' | 'accounts' | 'maintenance' | 'announcement' | 'terms';
+type Section = 'requests' | 'queue' | 'accounts' | 'prohibited-ips' | 'logs' | 'maintenance' | 'announcement' | 'terms';
 
 const SECTIONS: { id: Section; label: string; icon: typeof ClipboardList }[] = [
   { id: 'requests', label: 'Requests', icon: ClipboardList },
   { id: 'queue', label: 'Queue', icon: Layers3 },
   { id: 'accounts', label: 'Accounts', icon: Users },
+  { id: 'prohibited-ips', label: 'Prohibited IPs', icon: Ban },
+  { id: 'logs', label: 'Logs', icon: BarChart3 },
   { id: 'maintenance', label: 'Lockdown', icon: Shield },
   { id: 'announcement', label: 'Announcement', icon: Megaphone },
   { id: 'terms', label: 'Terms', icon: Settings },
@@ -167,6 +171,8 @@ export default function AdminDashboard({ session }: { session: Session }) {
       {section === 'queue' && !rows && loadError && <p className="banner error" role="alert">{loadError} <button className="btn ghost sm" onClick={load}>Retry</button></p>}
       {section === 'queue' && !rows && !loadError && <div className="center"><Loader2 className="spin" /></div>}
       {section === 'accounts' && <AdminAccounts />}
+      {section === 'prohibited-ips' && <ProhibitedIps />}
+      {section === 'logs' && <AdminLogs />}
       {section === 'maintenance' && <MaintenanceSettings />}
       {section === 'announcement' && <AnnouncementSettings />}
       {section === 'terms' && <TermsSettings />}
