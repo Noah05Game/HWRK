@@ -6,7 +6,7 @@ import { isConfigured, supabase } from '../lib/supabase';
 import { verifyPersonalGoogleAccount } from '../services/accounts';
 
 type EmailMode = 'sign_up' | 'sign_in';
-type ProviderBusy = 'email' | 'apple' | 'google' | '';
+type ProviderBusy = 'email' | 'google' | '';
 
 const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
 
@@ -84,28 +84,6 @@ export default function AccountAccess() {
     }
   }
 
-  async function continueWithApple() {
-    if (busy) return;
-    setBusy('apple');
-    setError('');
-    setMessage('');
-    if (!isConfigured) {
-      setError('Supabase is not configured.');
-      setBusy('');
-      return;
-    }
-    try {
-      const { error: signInError } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: { redirectTo: redirectUrl },
-      });
-      if (signInError) throw signInError;
-    } catch (e) {
-      setError((e as Error).message || 'Could not start Apple sign-in.');
-      setBusy('');
-    }
-  }
-
   return (
     <div className="page">
       <header className="topbar"><Wordmark /></header>
@@ -115,9 +93,6 @@ export default function AccountAccess() {
           <p className="muted small">Create an account to continue. Your account email will be used for contact.</p>
           <div className="account-providers">
             <GoogleSignIn disabled={Boolean(busy)} onCredential={handleGoogleCredential} onError={handleGoogleError} />
-            <button type="button" className="btn ghost block" onClick={continueWithApple} disabled={Boolean(busy)}>
-              {busy === 'apple' ? <><Loader2 size={16} className="spin" /> Connecting</> : 'Continue with Apple'}
-            </button>
           </div>
           <div className="account-divider"><span>or continue with email</span></div>
           <form onSubmit={submitEmail}>

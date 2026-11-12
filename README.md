@@ -14,16 +14,14 @@ supabase/
 
 1. Create a project at supabase.com. Note the Project URL, anon key and project ref.
 2. For a fresh project, run the SQL migrations in `supabase/migrations` in order. For an existing project, apply all unapplied migrations, or use `supabase db push`.
-3. Authentication > Sign In / Providers: enable user sign-ups and email confirmations. Enable Google and Apple providers and add their credentials. Add the public site URL and local development URL to the Auth redirect allow list.
+3. Authentication > Sign In / Providers: enable user sign-ups and email confirmations. Enable Google and email sign-in. Add the public site URL and local development URL to the Auth redirect allow list.
 4. Install the CLI, then `supabase login` and `supabase link --project-ref <ref>`.
 
 The queue migrations add the `cancelled` status and account-slot tables. Migration `0008_queue_and_account_slots.sql` also schedules slot expiry with Supabase's `pg_cron` extension.
 
 ## User accounts and onboarding
 
-Visitors create an account with Google, Apple, or email before submitting a request. Email users set an account password and should confirm their email. Google sign-in uses Google Identity Services; configure a Web OAuth client with `https://hwrk.wpoint.xyz` and your local development origin as authorized JavaScript origins. Set the same client ID as the `VITE_GOOGLE_CLIENT_ID` GitHub Actions variable and the `GOOGLE_CLIENT_ID` Supabase Edge Function secret. Google Workspace accounts are rejected by validating Google's signed hosted-domain claim on the server.
-
-Configure Apple sign-in in Supabase Auth with your Apple Services ID and Apple team/key details, and allow the callback URL shown by Supabase. Email, Google, and Apple must all be enabled as Auth providers.
+Visitors create an account with Google or email before submitting a request. Email users set an account password and should confirm their email. Google sign-in uses Google Identity Services; configure a Web OAuth client with `https://hwrk.wpoint.xyz` and your local development origin as authorized JavaScript origins. Set the same client ID as the `VITE_GOOGLE_CLIENT_ID` GitHub Actions variable and the `GOOGLE_CLIENT_ID` Supabase Edge Function secret. Google Workspace accounts are rejected by validating Google's signed hosted-domain claim on the server.
 
 After sign-in, onboarding collects the user's full name, school email, school/Sparx password, school name, and school login type (Email, Google, or Microsoft). The contact email is taken from the account email and must differ from the school email. The request form reuses these saved details; its request options, terms, and completion-date flow remain in place. Profile rows can only be accessed by their owner, and school credentials are copied to each request for the existing admin workflow.
 
