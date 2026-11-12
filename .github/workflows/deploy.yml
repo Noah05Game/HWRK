@@ -54,12 +54,12 @@ jobs:
           fi
       - name: Verify Supabase frontend config
         run: |
-          if [ -z "${VITE_SUPABASE_URL:-}" ] && ! grep -Eq '^VITE_SUPABASE_URL=.+$' .env; then
-            echo "Missing VITE_SUPABASE_URL: add it to the .env file or GitHub Actions secrets."
+          if [ -z "${VITE_SUPABASE_URL:-}" ]; then
+            echo "Missing VITE_SUPABASE_URL: add it to GitHub Actions secrets."
             exit 1
           fi
-          if [ -z "${VITE_SUPABASE_ANON_KEY:-}" ] && ! grep -Eq '^VITE_SUPABASE_ANON_KEY=.+$' .env; then
-            echo "Missing VITE_SUPABASE_ANON_KEY: add it to the .env file or GitHub Actions secrets."
+          if [ -z "${VITE_SUPABASE_ANON_KEY:-}" ]; then
+            echo "Missing VITE_SUPABASE_ANON_KEY: add it to GitHub Actions secrets."
             exit 1
           fi
       - run: npm ci
