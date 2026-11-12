@@ -2,5 +2,14 @@
   { "key": "option-1", "name": "Sparx Maths", "description": "Get your Sparx Maths homework done.", "accent": "#0A84FF" },
   { "key": "option-2", "name": "Sparx Science", "description": "Get your Sparx Science homework done.", "accent": "#30D158" },
   { "key": "option-3", "name": "Seneca", "description": "Get your Seneca homework done.", "accent": "#FF9F0A" },
-  { "key": "option-4", "name": "Sparx Reader", "description": "Get your Sparx Reader homework done.", "accent": "#BF5AF2" }
+  { "key": "option-4", "name": "Sparx Reader", "description": "Get your Sparx Reader homework done.", "accent": "#BF5AF2" },
+  { "key": "tassomai", "name": "Tassomai", "description": "Get your Tassomai homework done.", "accent": "#FFB38A" },
+  { "key": "languagenut", "name": "LanguageNut", "description": "Get your LanguageNut homework done.", "accent": "#FFFFFF" },
+  { "key": "educake", "name": "Educake", "description": "Get your Educake homework done.", "accent": "#BF5AF2" },
+  { "key": "century", "name": "Century", "description": "Get your Century homework done.", "accent": "#FF453A" },
+  { "key": "maths-watch", "name": "Maths Watch", "description": "Get your Maths Watch homework done.", "accent": "#0A84FF" },
+  { "key": "carousel", "name": "Carousel", "description": "Get your Carousel homework done.", "accent": "#40E0D0" },
+  { "key": "drfrost", "name": "DrFrost", "description": "Get your DrFrost homework done.", "accent": "#FFD60A" },
+  { "key": "sentencebuilders", "name": "SentenceBuilders", "description": "Get your SentenceBuilders homework done.", "accent": "#FF9F0A" },
+  { "key": "activehub", "name": "ActiveHub", "description": "Get your ActiveHub homework done.", "accent": "#40E0D0" }
 ]

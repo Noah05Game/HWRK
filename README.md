@@ -70,6 +70,7 @@ supabase functions deploy submit-request verify-google-account site-gate track-r
 ## 5. Request options
 
 Edit `src/config/options.json` (name, description, accent colour). Then keep the database in step so emails and the admin dashboard use the same names:
+The current request types include Sparx Maths, Sparx Science, Seneca, Sparx Reader, Tassomai, LanguageNut, Educake, Century, Maths Watch, Carousel, DrFrost, SentenceBuilders and ActiveHub. New options automatically receive two queue slots when inserted.
 
 ```
 npm run options:sql      # paste the output into the Supabase SQL editor
