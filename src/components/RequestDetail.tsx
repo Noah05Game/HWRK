@@ -164,8 +164,10 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
       <dl className="details two">
         <div><dt>Customer</dt><dd>{r.customer_name}</dd></div>
         <div><dt>Request</dt><dd>{r.request_options?.name ?? '—'}</dd></div>
-        <div><dt>Gmail</dt><dd>{r.gmail_email}</dd></div>
+        <div><dt>School email</dt><dd>{r.gmail_email}</dd></div>
         <div><dt>Contact email</dt><dd>{r.contact_email}</dd></div>
+        <div><dt>School</dt><dd>{r.school_name || '—'}</dd></div>
+        <div><dt>School login type</dt><dd>{r.school_login_type ? `${r.school_login_type[0].toUpperCase()}${r.school_login_type.slice(1)}` : '—'}</dd></div>
         <div><dt>Due</dt><dd>{fmtDate(r.due_date)}</dd></div>
         <div><dt>Submitted</dt><dd>{fmtDate(r.created_at)}</dd></div>
         {r.slot_number !== null && <div><dt>Account slot</dt><dd>{r.slot_number}</dd></div>}

@@ -4,16 +4,21 @@ import { Modal } from './Modal';
 import { ApiError, submitRequest } from '../services/api';
 import { getTerms } from '../services/terms';
 import { addDaysISO, todayISO } from '../lib/format';
-import type { RequestOption, SubmitResult, TermsSettings } from '../types';
+import type { RequestOption, SubmitResult, TermsSettings, UserProfile } from '../types';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-type Fields = 'fullName' | 'gmail' | 'contactEmail' | 'servicePassword' | 'dueDate';
+type Fields = 'dueDate';
 type Errors = Partial<Record<Fields, string>>;
 
-interface Props { option: RequestOption; onClose: () => void; onSuccess: (r: SubmitResult) => void }
+interface Props {
+  option: RequestOption;
+  profile: UserProfile;
+  accountEmail: string;
+  onClose: () => void;
+  onSuccess: (r: SubmitResult) => void;
+}
 
-export function RequestForm({ option, onClose, onSuccess }: Props) {
-  const [v, setV] = useState<Record<Fields, string>>({ fullName: '', gmail: '', contactEmail: '', servicePassword: '', dueDate: '' });
+export function RequestForm({ option, profile, accountEmail, onClose, onSuccess }: Props) {
+  const [v, setV] = useState<Record<Fields, string>>({ dueDate: '' });
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState('');
   const [terms, setTerms] = useState<TermsSettings | null>(null);
@@ -41,14 +46,6 @@ export function RequestForm({ option, onClose, onSuccess }: Props) {
 
   function validate(): Errors {
     const e: Errors = {};
-    if (v.fullName.trim().length < 2) e.fullName = 'Enter your full name.';
-    if (!EMAIL_RE.test(v.gmail.trim())) e.gmail = 'Enter a valid email address.';
-    if (!EMAIL_RE.test(v.contactEmail.trim())) e.contactEmail = 'Enter a valid contact email address.';
-    else if (EMAIL_RE.test(v.gmail.trim()) && v.gmail.trim().toLowerCase() === v.contactEmail.trim().toLowerCase()) {
-      e.contactEmail = 'Use a different email address from your school email.';
-    }
-    if (!v.servicePassword.length) e.servicePassword = 'Enter the password you were given.';
-    else if (v.servicePassword.length > 256) e.servicePassword = 'Password must be 256 characters or fewer.';
     if (!v.dueDate) e.dueDate = 'Choose a completion date.';
     else if (v.dueDate < todayISO()) e.dueDate = 'The date cannot be in the past.';
     else if (v.dueDate > addDaysISO(365)) e.dueDate = 'Choose a date within the next year.';
@@ -74,8 +71,7 @@ export function RequestForm({ option, onClose, onSuccess }: Props) {
     setBusy(true);
     try {
       const result = await submitRequest({
-        fullName: v.fullName.trim(), gmail: v.gmail.trim(), contactEmail: v.contactEmail.trim(),
-        servicePassword: v.servicePassword, dueDate: v.dueDate, optionKey: option.key,
+        dueDate: v.dueDate, optionKey: option.key,
         acceptedTerms: termsAccepted, termsVersion: terms.version, termsText: terms.terms_text,
       });
       onSuccess(result);
@@ -105,15 +101,10 @@ export function RequestForm({ option, onClose, onSuccess }: Props) {
   return (
     <Modal title={option.name} onClose={onClose} locked={busy}>
       <form onSubmit={submit} noValidate>
-        {field('fullName', 'Full name', { autoComplete: 'name', maxLength: 100 })}
-        <div className="row">
-          {field('gmail', 'School email address', { type: 'email', autoComplete: 'email', maxLength: 254 })}
-          {field('contactEmail', 'Contact email', { type: 'email', maxLength: 254 })}
-        </div>
-        <div className="row">
-          {field('servicePassword', 'Password', { type: 'password', autoComplete: 'off', spellCheck: false, maxLength: 256 })}
-          {field('dueDate', 'Requested completion date', { type: 'date', min: todayISO(), max: addDaysISO(365) })}
-        </div>
+        <p className="muted small">
+          This request will use your saved {profile.school_name} school account and send updates to {accountEmail}.
+        </p>
+        {field('dueDate', 'Requested completion date', { type: 'date', min: todayISO(), max: addDaysISO(365) })}
         <section className="terms-acceptance" aria-labelledby="terms-heading">
           <h3 id="terms-heading">Terms and conditions</h3>
           {termsLoading && <p className="muted small">Loading terms…</p>}

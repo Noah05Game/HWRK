@@ -107,12 +107,17 @@ export async function rateLimit(db: Db, key: string, limit: number, windowSecond
 }
 
 export async function requireAdmin(req: Request, db: Db) {
+  const user = await requireUser(req, db);
+  const { data: row } = await db.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
+  if (!row) throw new HttpError(403, 'This account is not authorised.', 'forbidden');
+  return user;
+}
+
+export async function requireUser(req: Request, db: Db) {
   const jwt = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
   if (!jwt) throw new HttpError(401, 'Your session has expired. Sign in again.', 'session');
   const { data, error } = await db.auth.getUser(jwt);
   if (error || !data.user) throw new HttpError(401, 'Your session has expired. Sign in again.', 'session');
-  const { data: row } = await db.from('admins').select('user_id').eq('user_id', data.user.id).maybeSingle();
-  if (!row) throw new HttpError(403, 'This account is not authorised.', 'forbidden');
   return data.user;
 }
 

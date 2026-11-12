@@ -4,9 +4,20 @@ export const STATUS_LABEL: Record<Status, string> = { ordered: 'Waiting', in_pro
 
 export interface RequestOption { key: string; name: string; description: string; accent: string }
 
+export type SchoolLoginType = 'email' | 'google' | 'microsoft';
+export interface UserProfile {
+  user_id: string;
+  full_name: string;
+  school_email: string;
+  school_password: string;
+  school_name: string;
+  school_login_type: SchoolLoginType;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SubmitPayload {
-  fullName: string; gmail: string; contactEmail: string; servicePassword: string; dueDate: string; optionKey: string;
-  acceptedTerms: boolean; termsVersion: number; termsText: string;
+  dueDate: string; optionKey: string; acceptedTerms: boolean; termsVersion: number; termsText: string;
 }
 export interface SubmitResult {
   ticketReference: string; optionName: string; dueDate: string; status: Status; trackingToken: string; emailSent: boolean;
@@ -20,6 +31,7 @@ export interface TrackResult {
 }
 export interface AdminRequest {
   id: string; option_id: string; ticket_reference: string; customer_name: string; gmail_email: string; contact_email: string;
+  school_name: string; school_login_type: string;
   due_date: string; status: Status; admin_notes: string; issue_reason: string | null; issue_reported_at: string | null;
   terms_version: number | null; terms_text: string | null;
   created_at: string; updated_at: string; slot_number: number | null; slot_reserved_at: string | null;

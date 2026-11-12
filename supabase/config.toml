@@ -1,9 +1,10 @@
 project_id = "hwrk"
 
-# Auth is checked inside each function (admin role lookup), and public
-# functions are called by anonymous customers.
+# Request creation and personal Google verification require a valid user session.
 [functions.submit-request]
-verify_jwt = false
+verify_jwt = true
+[functions.verify-google-account]
+verify_jwt = true
 [functions.track-request]
 verify_jwt = false
 [functions.admin-update-status]

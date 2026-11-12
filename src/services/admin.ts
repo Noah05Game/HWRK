@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { AdminRequest, EmailLog, HistoryRow } from '../types';
 
 const COLS =
-  'id, option_id, ticket_reference, customer_name, gmail_email, contact_email, due_date, status, admin_notes, issue_reason, issue_reported_at, terms_version, terms_text, created_at, updated_at, slot_number, slot_reserved_at, processing_started_at, slot_expires_at, request_options(key, name)';
+  'id, option_id, ticket_reference, customer_name, gmail_email, contact_email, school_name, school_login_type, due_date, status, admin_notes, issue_reason, issue_reported_at, terms_version, terms_text, created_at, updated_at, slot_number, slot_reserved_at, processing_started_at, slot_expires_at, request_options(key, name)';
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);

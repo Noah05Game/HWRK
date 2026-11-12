@@ -118,6 +118,18 @@ select option { background: var(--surface); }
 .maintenance-banner { border: 1px solid rgba(255, 159, 10, 0.5); background: rgba(255, 159, 10, 0.12); color: #ffd18a; border-radius: var(--radius); padding: 20px 24px; margin: -16px 0 28px; }
 .maintenance-banner h2 { font-size: 18px; margin-bottom: 4px; }
 .maintenance-banner p { margin: 0; }
+.account-panel, .onboarding-panel { padding: 28px; }
+.account-panel .h2, .onboarding-panel .h2 { margin-bottom: 8px; }
+.account-providers { display: grid; gap: 12px; margin-top: 20px; }
+.google-sign-in { position: relative; min-height: 44px; display: flex; justify-content: center; }
+.google-sign-in > div { width: 100%; display: flex; justify-content: center; }
+.google-sign-in.disabled .google-sign-in-cover { position: absolute; inset: 0; cursor: wait; }
+.account-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; color: var(--muted); font-size: 13px; }
+.account-divider::before, .account-divider::after { content: ''; height: 1px; flex: 1; background: var(--line); }
+.account-switch { margin: 18px 0 0; text-align: center; }
+.link-button { padding: 0; border: 0; background: none; color: var(--text); font: inherit; text-decoration: underline; cursor: pointer; }
+.link-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.onboarding-panel .field:last-of-type { margin-bottom: 20px; }
 .announcement-settings { padding: 24px; margin-bottom: 20px; }
 .announcement-settings .h2 { margin-bottom: 8px; }
 .announcement-settings textarea { margin-top: 6px; }
@@ -273,6 +285,7 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
   .queue-waiting li { align-items: flex-start; flex-direction: column; }
   .row { flex-direction: column; gap: 0; }
   .maintenance-settings { align-items: flex-start; flex-direction: column; }
+  .account-panel, .onboarding-panel { padding: 20px; }
   .announcement-settings { padding: 18px; }
   .announcement-colors { flex-wrap: wrap; }
   .details.two { grid-template-columns: 1fr; }

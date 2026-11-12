@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ToastProvider } from './hooks/useToast';
 import { SiteAttribution } from './components/SiteAttribution';
-import Landing from './pages/Landing';
+import UserHome from './pages/UserHome';
 import Track from './pages/Track';
 import Admin from './pages/Admin';
 import Lockdown from './pages/Lockdown';
@@ -51,7 +51,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
+      <Route path="/" element={<UserHome />} />
       <Route path="/t/:token" element={<Track />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<NotFound />} />

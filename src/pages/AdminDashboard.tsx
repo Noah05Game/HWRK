@@ -111,7 +111,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
       {visible.length > 0 && (
         <div className="glass table-wrap">
           <table className="requests">
-            <thead><tr><th>Ticket</th><th>Customer</th><th>Request</th><th>Gmail</th><th>Contact</th><th>Due</th><th>Submitted</th><th>Status</th></tr></thead>
+            <thead><tr><th>Ticket</th><th>Customer</th><th>Request</th><th>School email</th><th>Contact</th><th>Due</th><th>Submitted</th><th>Status</th></tr></thead>
             <tbody>
               {visible.map((r) => {
                 const overdue = isOverdue(r.due_date, r.status);
@@ -121,7 +121,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
                     <td data-label="Ticket" className="ref">{r.ticket_reference}</td>
                     <td data-label="Customer">{r.customer_name}</td>
                     <td data-label="Request">{r.request_options?.name}</td>
-                    <td data-label="Gmail">{r.gmail_email}</td>
+                    <td data-label="School email">{r.gmail_email}</td>
                     <td data-label="Contact">{r.contact_email}</td>
                     <td data-label="Due" className={overdue ? 'due-over' : ''}>{fmtDate(r.due_date)}</td>
                     <td data-label="Submitted">{fmtDate(r.created_at)}</td>

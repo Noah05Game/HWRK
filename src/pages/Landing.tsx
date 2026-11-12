@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
+import { LogOut } from 'lucide-react';
 import { REQUEST_OPTIONS } from '../config/options';
 import { Wordmark } from '../components/Wordmark';
 import { RequestForm } from '../components/RequestForm';
 import { Confirmation } from '../components/Confirmation';
-import { isConfigured } from '../lib/supabase';
+import { isConfigured, supabase } from '../lib/supabase';
 import { getMaintenanceSettings } from '../services/maintenance';
 import { getAnnouncementSettings } from '../services/announcement';
 import { getOptionCapacity } from '../services/queue';
-import type { AnnouncementSettings, OptionCapacity, RequestOption, SubmitResult } from '../types';
+import type { AnnouncementSettings, OptionCapacity, RequestOption, SubmitResult, UserProfile } from '../types';
 
-export default function Landing() {
+export default function Landing({ profile, accountEmail }: { profile: UserProfile; accountEmail: string }) {
   const [selected, setSelected] = useState<RequestOption | null>(null);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [maintenance, setMaintenance] = useState<boolean | null>(null);
@@ -18,6 +19,12 @@ export default function Landing() {
   const [announcementError, setAnnouncementError] = useState('');
   const [capacity, setCapacity] = useState<OptionCapacity[] | null>(null);
   const [capacityError, setCapacityError] = useState('');
+  const [accountError, setAccountError] = useState('');
+
+  async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) setAccountError(error.message);
+  }
 
   const loadMaintenance = useCallback(async () => {
     setMaintenanceError('');
@@ -61,9 +68,13 @@ export default function Landing() {
 
   return (
     <div className="page">
-      <header className="topbar"><Wordmark /></header>
+      <header className="topbar">
+        <Wordmark />
+        <button className="btn ghost sm" onClick={signOut}><LogOut size={15} /> Sign out</button>
+      </header>
       <main className="container">
         <h1 className={`hero ${maintenance ? 'maintenance-title' : ''}`}>{maintenance ? 'Down for maintenance' : 'Make a request'}</h1>
+        {accountError && <p className="banner error" role="alert">{accountError}</p>}
         {maintenance && (
           <section className="maintenance-banner" role="status">
             <h2>We’re performing maintenance</h2>
@@ -118,7 +129,8 @@ export default function Landing() {
         </div>
       </main>
       {selected && !result && (
-        <RequestForm option={selected} onClose={() => setSelected(null)} onSuccess={(r) => { setResult(r); }} />
+        <RequestForm option={selected} profile={profile} accountEmail={accountEmail}
+          onClose={() => setSelected(null)} onSuccess={(r) => { setResult(r); }} />
       )}
       {result && <Confirmation result={result} onClose={() => { setResult(null); setSelected(null); }} />}
     </div>

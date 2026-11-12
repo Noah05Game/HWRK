@@ -1,4 +1,4 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL, isConfigured } from '../lib/supabase';
+import { SUPABASE_ANON_KEY, SUPABASE_URL, isConfigured, supabase } from '../lib/supabase';
 import type { SubmitPayload, SubmitResult, TrackResult, Status } from '../types';
 
 export class ApiError extends Error {
@@ -24,7 +24,11 @@ async function call<T>(fn: string, body: unknown, accessToken?: string): Promise
   return data as T;
 }
 
-export const submitRequest = (p: SubmitPayload) => call<SubmitResult>('submit-request', p);
+export async function submitRequest(p: SubmitPayload): Promise<SubmitResult> {
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) throw new ApiError('Sign in before submitting a request.', 'session');
+  return call<SubmitResult>('submit-request', p, data.session.access_token);
+}
 export const trackRequest = (token: string) => call<TrackResult>('track-request', { token });
 
 export const updateStatus = (token: string, requestId: string, status: Status) =>

@@ -14,10 +14,18 @@ supabase/
 
 1. Create a project at supabase.com. Note the Project URL, anon key and project ref.
 2. For a fresh project, run the SQL migrations in `supabase/migrations` in order. For an existing project, apply all unapplied migrations, or use `supabase db push`.
-3. Authentication > Sign In / Providers: **disable "Allow new users to sign up"**. There is no public registration.
+3. Authentication > Sign In / Providers: enable user sign-ups and email confirmations. Enable Google and Apple providers and add their credentials. Add the public site URL and local development URL to the Auth redirect allow list.
 4. Install the CLI, then `supabase login` and `supabase link --project-ref <ref>`.
 
 The queue migrations add the `cancelled` status and account-slot tables. Migration `0008_queue_and_account_slots.sql` also schedules slot expiry with Supabase's `pg_cron` extension.
+
+## User accounts and onboarding
+
+Visitors create an account with Google, Apple, or email before submitting a request. Email users set an account password and should confirm their email. Google sign-in uses Google Identity Services; configure a Web OAuth client with `https://hwrk.wpoint.xyz` and your local development origin as authorized JavaScript origins. Set the same client ID as the `VITE_GOOGLE_CLIENT_ID` GitHub Actions variable and the `GOOGLE_CLIENT_ID` Supabase Edge Function secret. Google Workspace accounts are rejected by validating Google's signed hosted-domain claim on the server.
+
+Configure Apple sign-in in Supabase Auth with your Apple Services ID and Apple team/key details, and allow the callback URL shown by Supabase. Email, Google, and Apple must all be enabled as Auth providers.
+
+After sign-in, onboarding collects the user's full name, school email, school/Sparx password, school name, and school login type (Email, Google, or Microsoft). The contact email is taken from the account email and must differ from the school email. The request form reuses these saved details; its request options, terms, and completion-date flow remain in place. Profile rows can only be accessed by their owner, and school credentials are copied to each request for the existing admin workflow.
 
 ## 2. Admin account
 
@@ -37,18 +45,20 @@ The queue migrations add the `cancelled` status and account-slot tables. Migrati
 
 ## 4. Edge Function secrets and deploy
 
-Create `supabase/.env` (git-ignored; see `.env.example` for the server-only block):
+Create `supabase/.env` (git-ignored; see `.env.example` for the server-only block). Set `GOOGLE_CLIENT_ID` to the same Google Web OAuth client ID used by the frontend:
 
 ```
 RESEND_API_KEY=re_...
 APP_BASE_URL=https://hwrk.wpoint.xyz
 SERVER_SECRET=<output of: openssl rand -hex 32>
 ADMIN_EMAIL=you@example.com
+GOOGLE_CLIENT_ID=<Google Web OAuth client ID>
 ```
 
 ```
 supabase secrets set --env-file supabase/.env
-supabase functions deploy submit-request track-request admin-update-status admin-report-issue admin-delete-completed-request admin-retry-email
+supabase db push
+supabase functions deploy submit-request verify-google-account track-request admin-update-status admin-report-issue admin-delete-completed-request admin-retry-email
 ```
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into functions automatically. The service-role key and Resend key never reach the frontend. `APP_BASE_URL` must be the exact public site origin (scheme and hostname, no path) because it is used for both CORS and tracking links. For this deployment, use `https://hwrk.wpoint.xyz`. Do not change `SERVER_SECRET` later: it encrypts tracking tokens.
@@ -68,20 +78,20 @@ Each active option has two slots and can hold at most 14 outstanding requests. T
 1. Push to a GitHub repo with `main` as the default branch.
 2. Settings > Pages > Source: **GitHub Actions**.
 3. Optionally add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Actions secrets. Non-empty secrets override the same public frontend values from `.env`; if a secret is unset, the build uses `.env`.
-4. For a custom domain, add repository variable `VITE_BASE_PATH` = `/`. Otherwise the base defaults to `/<repo-name>/`.
+4. Add repository variable `VITE_GOOGLE_CLIENT_ID` for Google sign-in. For a custom domain, add repository variable `VITE_BASE_PATH` = `/`. Otherwise the base defaults to `/<repo-name>/`.
 5. Push to `main`. The workflow builds and deploys. `dist/404.html` is a copy of `index.html` so `/admin` and `/t/<token>` survive a refresh.
 
 ## 7. Local development
 
 ```
-cp .env.example .env.local   # fill VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY only
+cp .env.example .env.local   # fill VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and VITE_GOOGLE_CLIENT_ID
 npm install
 npm run dev
 ```
 
 ## How it works
 
-- **Submission**: the browser calls `submit-request`. It rate-limits by hashed IP (10 submissions/hour), validates every field, requires the school and contact email addresses to differ, and calls a locked-down SQL function that accepts the provided service password as free text, blocks duplicates (same Gmail and option while outstanding), enforces the 14-request cap under a per-option lock, creates the ticket (`HW-000001` from a sequence) and logs the initial status.
+- **Submission**: the browser calls the authenticated `submit-request` function. It rate-limits by hashed IP (10 submissions/hour), loads school details from the signed-in user's profile, derives the contact address from the verified account, requires school and contact emails to differ, blocks duplicate school-email/option requests, enforces the 14-request cap under a per-option lock, creates the ticket (`HW-000001` from a sequence), and logs the initial status.
 - **Queue and slots**: the database assigns two independent slots per option and reserves them in FIFO order. The 24-hour cooldown begins only when an admin starts processing. Completing or cancelling an in-progress request early does not release its slot; cancelling a waiting or reserved request releases its reservation.
 - **Capacity**: waiting, reserved and in-progress requests count toward the 14-request cap. Completed and cancelled requests do not. Capacity is enforced in the submission transaction, so simultaneous submissions cannot exceed the limit.
 - **Expiry and ETAs**: `pg_cron` runs `process_expired_slots()` once per minute without relying on an open browser. Submissions and private tracking lookups also process expiry for the relevant option. Estimated slot availability is derived from active expiries, reservations and FIFO requests and is not guaranteed.
