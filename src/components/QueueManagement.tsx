@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, RotateCw } from 'lucide-react';
 import { ConfirmDialog } from './ConfirmDialog';
 import { fmtDateTime } from '../lib/format';
 import { estimateQueue, localDateTimeValue } from '../lib/queue';
-import { getOptionCapacity, getOptionSlots, manageOptionSlot } from '../services/queue';
+import { getDailySlotCount, getOptionCapacity, getOptionSlots, manageOptionSlot, setDailySlotCount } from '../services/queue';
 import { listAdminAccounts } from '../services/admin';
 import type { AdminRequest, OptionCapacity, OptionSlot } from '../types';
 
@@ -12,9 +12,14 @@ interface Props { requests: AdminRequest[]; onChanged: () => void }
 export function QueueManagement({ requests, onChanged }: Props) {
   const [capacity, setCapacity] = useState<OptionCapacity[] | null>(null);
   const [slots, setSlots] = useState<OptionSlot[]>([]);
+  const [dailySlotCount, setDailySlotCountValue] = useState<number | null>(null);
+  const [dailySlotCountInput, setDailySlotCountInput] = useState('2');
+  const capacityInputEdited = useRef(false);
   const [priorityUsers, setPriorityUsers] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
+  const [savingCapacity, setSavingCapacity] = useState(false);
   const [busySlot, setBusySlot] = useState('');
   const [expiryInputs, setExpiryInputs] = useState<Record<string, string>>({});
   const [releaseSlot, setReleaseSlot] = useState<OptionSlot | null>(null);
@@ -22,9 +27,13 @@ export function QueueManagement({ requests, onChanged }: Props) {
   const load = useCallback(async () => {
     setError('');
     try {
-      const [nextCapacity, nextSlots, accounts] = await Promise.all([getOptionCapacity(), getOptionSlots(), listAdminAccounts()]);
+      const [nextCapacity, nextSlots, accounts, nextDailySlotCount] = await Promise.all([
+        getOptionCapacity(), getOptionSlots(), listAdminAccounts(), getDailySlotCount(),
+      ]);
       setCapacity(nextCapacity);
       setSlots(nextSlots);
+      setDailySlotCountValue(nextDailySlotCount);
+      if (!capacityInputEdited.current) setDailySlotCountInput(String(nextDailySlotCount));
       setPriorityUsers(new Set(accounts.filter((account) => account.is_priority).map((account) => account.user_id)));
       setExpiryInputs((current) => {
         const next = { ...current };
@@ -57,6 +66,30 @@ export function QueueManagement({ requests, onChanged }: Props) {
     const rest = minutes % 60;
     return hours ? `${hours}h ${rest}m remaining` : `${rest}m remaining`;
   };
+
+  async function saveDailySlotCount() {
+    const value = Number(dailySlotCountInput);
+    if (!Number.isInteger(value) || value < 1 || value > 100) {
+      setError('Enter a whole number of daily slots between 1 and 100.');
+      setSuccess('');
+      return;
+    }
+
+    setSavingCapacity(true);
+    setError('');
+    setSuccess('');
+    try {
+      await setDailySlotCount(value);
+      capacityInputEdited.current = false;
+      await load();
+      setSuccess(`Daily capacity updated to ${value} slot${value === 1 ? '' : 's'} per option.`);
+      onChanged();
+    } catch (e) {
+      setError((e as Error).message || 'Could not update daily slot capacity.');
+    } finally {
+      setSavingCapacity(false);
+    }
+  }
 
   async function release(slot: OptionSlot) {
     setBusySlot(slot.id);
@@ -96,25 +129,50 @@ export function QueueManagement({ requests, onChanged }: Props) {
       <div className="queue-heading">
         <div>
           <h2 className="h2">Queue and account slots</h2>
-          <p className="muted small">Two independently managed slots per option. Cooldowns begin when processing starts.</p>
+          <p className="muted small">Each slot has its own 24-hour cooldown, starting when processing begins.</p>
         </div>
         <button className="btn ghost sm" onClick={load} disabled={loading} aria-label="Refresh queues">
           {loading ? <Loader2 size={14} className="spin" /> : <RotateCw size={14} />} Refresh
         </button>
       </div>
       {error && <p className="banner error" role="alert">{error}</p>}
+      {success && <p className="banner ok" role="status">{success}</p>}
+      <div className="daily-capacity">
+        <div>
+          <h3>Daily slots per option</h3>
+          <p className="muted small">
+            Sets the shared number of daily slots for every request option. The outstanding-request limit scales to seven days of capacity.
+            Lowering capacity keeps existing reservations and cooldowns until they clear.
+          </p>
+        </div>
+        <div className="daily-capacity-controls">
+          <label htmlFor="daily-slot-count">Slots per day</label>
+          <input id="daily-slot-count" type="number" min="1" max="100" step="1"
+            value={dailySlotCountInput} onChange={(event) => {
+              capacityInputEdited.current = true;
+              setDailySlotCountInput(event.target.value);
+            }}
+            disabled={dailySlotCount === null || savingCapacity} />
+          <button className="btn primary sm" type="button" onClick={saveDailySlotCount}
+            disabled={dailySlotCount === null || savingCapacity || Number(dailySlotCountInput) === dailySlotCount}>
+            {savingCapacity ? <Loader2 size={14} className="spin" /> : null}
+            {savingCapacity ? 'Saving' : 'Save capacity'}
+          </button>
+        </div>
+      </div>
       {loading && !capacity ? <div className="center"><Loader2 className="spin" /></div> : capacity?.map((option) => {
         const optionSlots = slots.filter((slot) => slot.option_id === option.option_id);
+        const configuredSlots = optionSlots.filter((slot) => slot.slot_number <= (dailySlotCount ?? 0));
         const waiting = requests
           .filter((request) => request.option_id === option.option_id && request.status === 'ordered' && !assignedIds.has(request.id))
           .sort((a, b) =>
             Number(priorityUsers.has(b.auth_user_id ?? '')) - Number(priorityUsers.has(a.auth_user_id ?? ''))
             || a.created_at.localeCompare(b.created_at)
             || a.id.localeCompare(b.id));
-        const estimates = estimateQueue(optionSlots, waiting);
-        const availableNow = optionSlots.some((slot) =>
+        const estimates = estimateQueue(configuredSlots, waiting);
+        const availableNow = configuredSlots.some((slot) =>
           !slot.current_request_id && (!slot.expires_at || Date.parse(slot.expires_at) <= Date.now()));
-        const nextAvailability = optionSlots
+        const nextAvailability = configuredSlots
           .map((slot) => slot.expires_at ?? (slot.current_request_id && slot.reserved_at
             ? new Date(Math.max(Date.parse(slot.reserved_at), Date.now()) + 24 * 60 * 60 * 1000).toISOString()
             : null))
@@ -125,10 +183,13 @@ export function QueueManagement({ requests, onChanged }: Props) {
           <article className="queue-option" key={option.option_id}>
             <header className="queue-option-head">
               <h3>{option.option_name}</h3>
-              <span className="muted small">Outstanding {option.outstanding_count}/14 · Waiting {option.waiting_count} · Reserved {option.reserved_count} · In progress {option.in_progress_count}</span>
+              <span className="muted small">Outstanding {option.outstanding_count}/{(dailySlotCount ?? 0) * 7} · Waiting {option.waiting_count} · Reserved {option.reserved_count} · In progress {option.in_progress_count}</span>
             </header>
             <p className="queue-next muted small">
-              Slots occupied: {optionSlots.filter((slot) => slot.current_request_id || (slot.expires_at && Date.parse(slot.expires_at) > Date.now())).length}/2
+              Slots occupied: {optionSlots.filter((slot) => slot.current_request_id || (slot.expires_at && Date.parse(slot.expires_at) > Date.now())).length}/{dailySlotCount} configured
+              {optionSlots.some((slot) => slot.slot_number > (dailySlotCount ?? 0) && (slot.current_request_id || (slot.expires_at && Date.parse(slot.expires_at) > Date.now())))
+                ? ' · Extra occupied slots are preserved until they clear'
+                : ''}
               {' · '}Next availability: {availableNow ? 'Available now' : nextAvailability ? fmtDateTime(nextAvailability) : 'Awaiting processing start'}
             </p>
             <div className="queue-slots">
@@ -140,7 +201,9 @@ export function QueueManagement({ requests, onChanged }: Props) {
                   <div className="queue-slot" key={slot.id}>
                     <div className="queue-slot-title">
                       <strong>Slot {slot.slot_number}</strong>
-                      <span className={`pill ${occupied ? 'failed' : 'sent'}`}>{isReserved ? 'Reserved' : occupied ? 'Cooling down' : 'Available'}</span>
+                      <span className={`pill ${occupied ? 'failed' : 'sent'}`}>
+                        {slot.slot_number > (dailySlotCount ?? 0) ? (occupied ? 'Preserved' : 'Removing') : isReserved ? 'Reserved' : occupied ? 'Cooling down' : 'Available'}
+                      </span>
                     </div>
                     {request && <p className="small">{request.customer_name} · {request.ticket_reference} · {request.status === 'in_progress' ? 'In Progress' : 'Waiting to start'}</p>}
                     {!request && slot.expires_at && <p className="small">Cooldown retained after request removal</p>}

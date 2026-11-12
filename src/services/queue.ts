@@ -7,6 +7,17 @@ export async function getOptionCapacity(): Promise<OptionCapacity[]> {
   return data as OptionCapacity[];
 }
 
+export async function getDailySlotCount(): Promise<number> {
+  const { data, error } = await supabase.rpc('get_daily_slot_count');
+  if (error) throw new Error(error.message);
+  return data as number;
+}
+
+export async function setDailySlotCount(dailySlots: number): Promise<void> {
+  const { error } = await supabase.rpc('admin_set_daily_slot_count', { p_daily_slots: dailySlots });
+  if (error) throw new Error(error.message);
+}
+
 export async function getOptionSlots(): Promise<OptionSlot[]> {
   const { data, error } = await supabase
     .from('option_slots')

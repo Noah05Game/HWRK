@@ -12,11 +12,12 @@ export function estimateQueue(
       return now;
     })
     .sort((a, b) => a - b);
-  const nextAvailable = availability.length >= 2 ? availability.slice(0, 2) : [...availability, ...Array(Math.max(0, 2 - availability.length)).fill(now)];
+  const nextAvailable = availability.length ? availability : [now];
   const result = new Map<string, { position: number; estimatedSlotAt: Date }>();
 
   waiting.forEach((request, index) => {
-    const slotIndex = nextAvailable[0] <= nextAvailable[1] ? 0 : 1;
+    const slotIndex = nextAvailable.reduce((earliest, value, candidate) =>
+      value < nextAvailable[earliest] ? candidate : earliest, 0);
     const estimatedSlotAt = nextAvailable[slotIndex];
     result.set(request.id, { position: index + 1, estimatedSlotAt: new Date(estimatedSlotAt) });
     nextAvailable[slotIndex] = estimatedSlotAt + 24 * 60 * 60 * 1000;

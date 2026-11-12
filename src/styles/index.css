@@ -226,10 +226,16 @@ select option { background: var(--surface); }
 .queue-heading, .queue-option-head, .queue-slot-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .queue-heading { margin-bottom: 18px; }
 .queue-heading .h2 { margin: 0 0 4px; }
+.daily-capacity { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.daily-capacity h3 { margin: 0 0 4px; }
+.daily-capacity p { max-width: 700px; margin: 0; }
+.daily-capacity-controls { display: flex; align-items: flex-end; gap: 8px; flex: none; }
+.daily-capacity-controls label { display: grid; gap: 4px; font-size: 13px; }
+.daily-capacity-controls input { width: 90px; }
 .queue-option { border-top: 1px solid var(--line); padding: 18px 0; }
 .queue-option-head h3 { margin: 0; }
 .queue-next { margin: 8px 0 14px; }
-.queue-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.queue-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
 .queue-slot { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; }
 .queue-slot p { margin: 8px 0 0; }
 .queue-slot .pill { margin-left: 0; }
@@ -320,7 +326,8 @@ table.simple { font-size: 14px; } .dim { opacity: 0.5; }
   .accounts-panel { padding: 18px; }
   .admin-panel { padding: 18px; }
   .account-actions { align-items: flex-end; flex-direction: column; }
-  .queue-option-head, .queue-heading { align-items: flex-start; flex-direction: column; }
+  .queue-option-head, .queue-heading, .daily-capacity { align-items: flex-start; flex-direction: column; }
+  .daily-capacity-controls { width: 100%; }
   .queue-slots { grid-template-columns: 1fr; }
   .replacement-slot { align-items: flex-start; flex-direction: column; }
   .queue-waiting li { align-items: flex-start; flex-direction: column; }

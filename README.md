@@ -70,13 +70,13 @@ supabase functions deploy submit-request verify-google-account site-gate track-r
 ## 5. Request options
 
 Edit `src/config/options.json` (name, description, accent colour). Then keep the database in step so emails and the admin dashboard use the same names:
-The current request types include Sparx Maths, Sparx Science, Seneca, Sparx Reader, Tassomai, LanguageNut, Educake, Century, Maths Watch, Carousel, DrFrost, SentenceBuilders and ActiveHub. New options automatically receive two queue slots when inserted.
+The current request types include Sparx Maths, Sparx Science, Seneca, Sparx Reader, Tassomai, LanguageNut, Educake, Century, Maths Watch, Carousel, DrFrost, SentenceBuilders and ActiveHub. New options automatically receive the configured number of queue slots when inserted.
 
 ```
 npm run options:sql      # paste the output into the Supabase SQL editor
 ```
 
-Each active option has two slots and can hold at most 14 outstanding requests. There are no weekly capacity limits.
+The shared daily slot count is configurable in the admin Queue section (1–100 per option). Each slot has a 24-hour cooldown from when processing starts, and each option can hold up to seven days of outstanding requests based on the configured slot count. Reducing the count preserves active reservations and cooldowns until they clear.
 
 ## 6. GitHub Pages
 
@@ -97,7 +97,7 @@ npm run dev
 ## How it works
 
 - **Submission**: the browser calls the authenticated `submit-request` function. It rate-limits by hashed IP (10 submissions/hour), loads school details from the signed-in user's profile, derives the contact address from the verified account, requires school and contact emails to differ, blocks duplicate school-email/option requests, enforces the 14-request cap under a per-option lock, creates the ticket (`HW-000001` from a sequence), and logs the initial status.
-- **Queue and slots**: the database assigns two independent slots per option and reserves them in FIFO order, with priority requests served before standard requests. A priority request can replace the waiting request with the shortest current reservation time; requests already in progress are never interrupted. The 24-hour cooldown begins only when an admin starts processing. Completing or cancelling an in-progress request early does not release its slot; cancelling a waiting or reserved request releases its reservation.
+- **Queue and slots**: the database assigns the configured number of independent slots per option and reserves them in FIFO order, with priority requests served before standard requests. A priority request can replace the waiting request with the shortest current reservation time; requests already in progress are never interrupted. The 24-hour cooldown begins only when an admin starts processing. Completing or cancelling an in-progress request early does not release its slot; cancelling a waiting or reserved request releases its reservation.
 - **Capacity**: waiting, reserved and in-progress requests count toward the 14-request cap. Completed and cancelled requests do not. Capacity is enforced in the submission transaction, so simultaneous submissions cannot exceed the limit.
 - **Expiry and ETAs**: `pg_cron` runs `process_expired_slots()` once per minute without relying on an open browser. Submissions and private tracking lookups also process expiry for the relevant option. Estimated slot availability is derived from active expiries, reservations and FIFO requests and is not guaranteed.
 - **Tracking**: the existing `/t/<token>` route is unchanged. The token is 256 bits of random data; only its SHA-256 hash is used for lookup. The page displays queue position, people ahead, estimated wait, reservation details and processing timestamps, and refreshes queue state every 30 seconds.

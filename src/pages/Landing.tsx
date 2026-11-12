@@ -7,7 +7,7 @@ import { Confirmation } from '../components/Confirmation';
 import { isConfigured, supabase } from '../lib/supabase';
 import { getMaintenanceSettings } from '../services/maintenance';
 import { getAnnouncementSettings } from '../services/announcement';
-import { getOptionCapacity } from '../services/queue';
+import { getDailySlotCount, getOptionCapacity } from '../services/queue';
 import type { AnnouncementSettings, OptionCapacity, RequestOption, SubmitResult, UserProfile } from '../types';
 
 export default function Landing({ profile, accountEmail }: { profile: UserProfile; accountEmail: string }) {
@@ -18,6 +18,7 @@ export default function Landing({ profile, accountEmail }: { profile: UserProfil
   const [announcement, setAnnouncement] = useState<AnnouncementSettings | null>(null);
   const [announcementError, setAnnouncementError] = useState('');
   const [capacity, setCapacity] = useState<OptionCapacity[] | null>(null);
+  const [dailySlotCount, setDailySlotCount] = useState<number | null>(null);
   const [capacityError, setCapacityError] = useState('');
   const [accountError, setAccountError] = useState('');
 
@@ -55,7 +56,9 @@ export default function Landing({ profile, accountEmail }: { profile: UserProfil
   const loadCapacity = useCallback(async () => {
     setCapacityError('');
     try {
-      setCapacity(await getOptionCapacity());
+      const [nextCapacity, nextDailySlotCount] = await Promise.all([getOptionCapacity(), getDailySlotCount()]);
+      setCapacity(nextCapacity);
+      setDailySlotCount(nextDailySlotCount);
     } catch (e) {
       setCapacityError((e as Error).message || 'Could not verify option capacity.');
     }
@@ -125,7 +128,7 @@ export default function Landing({ profile, accountEmail }: { profile: UserProfil
               <span className="dot" />
               <h2>{o.name}</h2>
               <p className="muted">{o.description}</p>
-              {availability && <p className="muted small">{availability.outstanding_count}/14 outstanding</p>}
+              {availability && dailySlotCount !== null && <p className="muted small">{availability.outstanding_count}/{dailySlotCount * 7} outstanding</p>}
               {availability?.is_full && <p className="queue-full-note">Temporarily full. It will reopen when a request is completed or cancelled.</p>}
               <button className="btn accent" disabled={maintenance === null || Boolean(maintenanceError) || maintenance || !capacity || Boolean(capacityError) || unavailable}
                 onClick={() => setSelected(o)}>Request</button>
