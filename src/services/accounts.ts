@@ -54,9 +54,21 @@ export async function verifyPersonalGoogleAccount(idToken: string, accessToken: 
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   if (error) {
-    const response = (error as Error & { context?: Response }).context;
-    const body = response ? await response.clone().json().catch(() => null) : null;
-    throw new Error(body?.error || error.message || 'Could not verify this Google account.');
+    const context = (error as Error & { context?: unknown }).context;
+    let responseMessage: string | undefined;
+    if (context instanceof Response) {
+      try {
+        const body: unknown = await context.json();
+        if (body && typeof body === 'object' && 'error' in body && typeof body.error === 'string') {
+          responseMessage = body.error;
+        }
+      } catch {
+        responseMessage = undefined;
+      }
+    } else if (context && typeof context === 'object' && 'error' in context && typeof context.error === 'string') {
+      responseMessage = context.error;
+    }
+    throw new Error(responseMessage || error.message || 'Could not verify this Google account.');
   }
 }
 
