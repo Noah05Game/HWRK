@@ -9,13 +9,18 @@ type EmailMode = 'sign_up' | 'sign_in';
 type ProviderBusy = 'email' | 'google' | '';
 
 const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+const GOOGLE_AUTH_ERROR_KEY = 'hwrk.google-auth-error';
 
 export default function AccountAccess() {
-  const [mode, setMode] = useState<EmailMode>('sign_up');
+  const [mode, setMode] = useState<EmailMode>('sign_in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState<ProviderBusy>('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => {
+    const savedError = sessionStorage.getItem(GOOGLE_AUTH_ERROR_KEY) ?? '';
+    sessionStorage.removeItem(GOOGLE_AUTH_ERROR_KEY);
+    return savedError;
+  });
   const [message, setMessage] = useState('');
 
   const handleGoogleError = useCallback((detail: string) => {
@@ -35,6 +40,8 @@ export default function AccountAccess() {
       try {
         await verifyPersonalGoogleAccount(idToken, data.session.access_token);
       } catch (verificationError) {
+        const message = (verificationError as Error).message || 'Could not verify this Google account.';
+        sessionStorage.setItem(GOOGLE_AUTH_ERROR_KEY, message);
         await supabase.auth.signOut();
         throw verificationError;
       }
