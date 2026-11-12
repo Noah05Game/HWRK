@@ -18,12 +18,15 @@ supabase/
 4. Install the CLI, then `supabase login` and `supabase link --project-ref <ref>`.
 
 The queue migrations add the `cancelled` status and account-slot tables. Migration `0008_queue_and_account_slots.sql` also schedules slot expiry with Supabase's `pg_cron` extension.
+Migration `0012_priority_and_account_bans.sql` adds administrator-managed priority access and persistent ban records. Apply it to the database before deploying this version of the app.
 
 ## User accounts and onboarding
 
 Visitors create an account with Google or email before submitting a request. Email users set an account password and should confirm their email. Google sign-in uses Google Identity Services; configure a Web OAuth client with `https://hwrk.wpoint.xyz` and your local development origin as authorized JavaScript origins. Set the same client ID as the `VITE_GOOGLE_CLIENT_ID` GitHub Actions variable and the `GOOGLE_CLIENT_ID` Supabase Edge Function secret. Google Workspace accounts are rejected by validating Google's signed hosted-domain claim on the server.
 
 After sign-in, onboarding collects the user's full name, school email, school/Sparx password, school name, and school login type (Email, Google, or Microsoft). The contact email is taken from the account email and must differ from the school email. The request form reuses these saved details; its request options, terms, and completion-date flow remain in place. Profile rows can only be accessed by their owner, and school credentials are copied to each request for the existing admin workflow.
+
+Admins can open **Accounts** to grant or remove priority access and ban or unban accounts. Priority requests move ahead of standard requests and may replace the least-recently-reserved waiting slot; work already in progress is not interrupted. Ban records retain both the account email and school email, including after unbanning. Banned emails are rejected during account creation, sign-in, onboarding, and request submission.
 
 ## 2. Admin account
 
@@ -90,11 +93,12 @@ npm run dev
 ## How it works
 
 - **Submission**: the browser calls the authenticated `submit-request` function. It rate-limits by hashed IP (10 submissions/hour), loads school details from the signed-in user's profile, derives the contact address from the verified account, requires school and contact emails to differ, blocks duplicate school-email/option requests, enforces the 14-request cap under a per-option lock, creates the ticket (`HW-000001` from a sequence), and logs the initial status.
-- **Queue and slots**: the database assigns two independent slots per option and reserves them in FIFO order. The 24-hour cooldown begins only when an admin starts processing. Completing or cancelling an in-progress request early does not release its slot; cancelling a waiting or reserved request releases its reservation.
+- **Queue and slots**: the database assigns two independent slots per option and reserves them in FIFO order, with priority requests served before standard requests. A priority request can replace the waiting request with the shortest current reservation time; requests already in progress are never interrupted. The 24-hour cooldown begins only when an admin starts processing. Completing or cancelling an in-progress request early does not release its slot; cancelling a waiting or reserved request releases its reservation.
 - **Capacity**: waiting, reserved and in-progress requests count toward the 14-request cap. Completed and cancelled requests do not. Capacity is enforced in the submission transaction, so simultaneous submissions cannot exceed the limit.
 - **Expiry and ETAs**: `pg_cron` runs `process_expired_slots()` once per minute without relying on an open browser. Submissions and private tracking lookups also process expiry for the relevant option. Estimated slot availability is derived from active expiries, reservations and FIFO requests and is not guaranteed.
 - **Tracking**: the existing `/t/<token>` route is unchanged. The token is 256 bits of random data; only its SHA-256 hash is used for lookup. The page displays queue position, people ahead, estimated wait, reservation details and processing timestamps, and refreshes queue state every 30 seconds.
-- **Admin queue controls**: the existing admin dashboard shows per-option counts, both slots, cooldowns and FIFO queues. Admins can start, complete or cancel requests, manually release an active slot, adjust its expiry, and replace an unstarted reservation with a waiting request. The displaced request returns to the queue; slots already in progress cannot be replaced.
+- **Admin navigation and queue controls**: the dashboard separates requests, queues, accounts, lockdown, announcements and terms into menus. Queue views show per-option counts, both slots, cooldowns and priority-first queues. Admins can start, complete or cancel requests, manually release an active slot, adjust its expiry, and replace an unstarted reservation with a waiting request. The displaced request returns to the queue; slots already in progress cannot be replaced.
+- **Priority and bans**: account management displays account and school emails. Priority access is applied to future and waiting requests. A ban blocks matching account and school emails and is retained as an audit record when unbanned.
 - **Lockdown mode**: the admin dashboard can replace all public pages with the configured domain listing and block new requests. The `/admin` route remains available so an administrator can turn lockdown off.
 - **Main page announcement**: admins can configure and toggle a public banner with custom title, message, background colour and text colour.
 - **Status changes**: `admin-update-status` verifies the admin, then a SQL function updates the status and writes `status_history` in one transaction. Email is sent only when the status actually changed, and only for In Progress and Completed.

@@ -74,6 +74,12 @@ export default function Landing({ profile, accountEmail }: { profile: UserProfil
       </header>
       <main className="container">
         <h1 className={`hero ${maintenance ? 'maintenance-title' : ''}`}>{maintenance ? 'Down for maintenance' : 'Make a request'}</h1>
+        {profile.is_priority && (
+          <section className="priority-member" role="status">
+            <span className="priority-star" aria-hidden="true">★</span>
+            <div><strong>You are a priority member</strong><p>Your requests are moved ahead of the standard queue.</p></div>
+          </section>
+        )}
         {accountError && <p className="banner error" role="alert">{accountError}</p>}
         {maintenance && (
           <section className="maintenance-banner" role="status">

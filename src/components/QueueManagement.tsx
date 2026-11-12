@@ -4,6 +4,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { fmtDateTime } from '../lib/format';
 import { estimateQueue, localDateTimeValue } from '../lib/queue';
 import { getOptionCapacity, getOptionSlots, manageOptionSlot } from '../services/queue';
+import { listAdminAccounts } from '../services/admin';
 import type { AdminRequest, OptionCapacity, OptionSlot } from '../types';
 
 interface Props { requests: AdminRequest[]; onChanged: () => void }
@@ -11,6 +12,7 @@ interface Props { requests: AdminRequest[]; onChanged: () => void }
 export function QueueManagement({ requests, onChanged }: Props) {
   const [capacity, setCapacity] = useState<OptionCapacity[] | null>(null);
   const [slots, setSlots] = useState<OptionSlot[]>([]);
+  const [priorityUsers, setPriorityUsers] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [busySlot, setBusySlot] = useState('');
@@ -20,9 +22,10 @@ export function QueueManagement({ requests, onChanged }: Props) {
   const load = useCallback(async () => {
     setError('');
     try {
-      const [nextCapacity, nextSlots] = await Promise.all([getOptionCapacity(), getOptionSlots()]);
+      const [nextCapacity, nextSlots, accounts] = await Promise.all([getOptionCapacity(), getOptionSlots(), listAdminAccounts()]);
       setCapacity(nextCapacity);
       setSlots(nextSlots);
+      setPriorityUsers(new Set(accounts.filter((account) => account.is_priority).map((account) => account.user_id)));
       setExpiryInputs((current) => {
         const next = { ...current };
         for (const slot of nextSlots) {
@@ -104,7 +107,10 @@ export function QueueManagement({ requests, onChanged }: Props) {
         const optionSlots = slots.filter((slot) => slot.option_id === option.option_id);
         const waiting = requests
           .filter((request) => request.option_id === option.option_id && request.status === 'ordered' && !assignedIds.has(request.id))
-          .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
+          .sort((a, b) =>
+            Number(priorityUsers.has(b.auth_user_id ?? '')) - Number(priorityUsers.has(a.auth_user_id ?? ''))
+            || a.created_at.localeCompare(b.created_at)
+            || a.id.localeCompare(b.id));
         const estimates = estimateQueue(optionSlots, waiting);
         const availableNow = optionSlots.some((slot) =>
           !slot.current_request_id && (!slot.expires_at || Date.parse(slot.expires_at) <= Date.now()));

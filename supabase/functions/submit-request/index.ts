@@ -17,6 +17,13 @@ Deno.serve(handler(async (req, db) => {
     .maybeSingle();
   if (profileError) throw new Error(`Could not load account profile: ${profileError.message}`);
   if (!profile) throw new HttpError(409, 'Complete account setup before submitting a request.', 'onboarding_required');
+  const { data: banned, error: banError } = await db.rpc('is_account_banned', {
+    p_user_id: user.id,
+    p_account_email: user.email,
+    p_school_email: profile.school_email,
+  });
+  if (banError) throw new Error(`Could not verify account access: ${banError.message}`);
+  if (banned) throw new HttpError(403, 'This account has been banned from submitting requests.', 'account_banned');
 
   const provider = user.identities?.some((identity) => identity.provider === 'google')
     ? 'google'
@@ -75,6 +82,7 @@ Deno.serve(handler(async (req, db) => {
 
   if (error) {
     const m = error.message ?? '';
+    if (m.includes('account_banned')) throw new HttpError(403, 'This account has been banned from submitting requests.', 'account_banned');
     if (m.includes('duplicate_request')) throw new HttpError(409, 'You already have an open request of this type.', 'duplicate');
     if (m.includes('invalid_option')) throw new HttpError(400, 'This request type is not available.', 'validation', 'optionKey');
     if (m.includes('option_full')) throw new HttpError(409, 'This request type is temporarily full. It will become available when an existing request is completed or cancelled.', 'option_full');

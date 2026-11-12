@@ -12,8 +12,20 @@ export interface UserProfile {
   school_password: string;
   school_name: string;
   school_login_type: SchoolLoginType;
+  is_priority: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface AdminAccount {
+  user_id: string;
+  account_email: string | null;
+  school_email: string | null;
+  full_name: string | null;
+  is_priority: boolean;
+  is_banned: boolean;
+  has_direct_ban: boolean;
+  created_at: string;
 }
 
 export interface SubmitPayload {
@@ -30,7 +42,7 @@ export interface TrackResult {
   slotNumber: number | null; slotReservedAt: string | null; processingStartedAt: string | null; slotExpiresAt: string | null;
 }
 export interface AdminRequest {
-  id: string; option_id: string; ticket_reference: string; customer_name: string; gmail_email: string; contact_email: string;
+  id: string; option_id: string; auth_user_id: string | null; ticket_reference: string; customer_name: string; gmail_email: string; contact_email: string;
   school_name: string; school_login_type: string;
   due_date: string; status: Status; admin_notes: string; issue_reason: string | null; issue_reported_at: string | null;
   terms_version: number | null; terms_text: string | null;

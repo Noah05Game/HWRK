@@ -133,9 +133,10 @@ export function RequestForm({ option, profile, accountEmail, onClose, onSuccess 
         {formError && <p className="banner error" role="alert">{formError}</p>}
         <div className="actions">
           <button type="button" className="btn ghost" onClick={onClose} disabled={busy}>Cancel</button>
-          <button type="submit" className="btn primary" style={{ '--accent': option.accent } as React.CSSProperties}
+          <button type="submit" className={`btn ${profile.is_priority ? 'priority-submit' : 'primary'}`}
+            style={!profile.is_priority ? { '--accent': option.accent } as React.CSSProperties : undefined}
             disabled={busy || termsLoading || Boolean(termsLoadError) || !termsReady || !termsAccepted}>
-            {busy ? <><Loader2 size={16} className="spin" /> Submitting</> : 'Submit request'}
+            {busy ? <><Loader2 size={16} className="spin" /> Submitting</> : profile.is_priority ? 'Submit with Priority' : 'Submit request'}
           </button>
         </div>
       </form>

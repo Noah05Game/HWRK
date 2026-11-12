@@ -1,8 +1,8 @@
 import { supabase } from '../lib/supabase';
-import type { AdminRequest, EmailLog, HistoryRow } from '../types';
+import type { AdminAccount, AdminRequest, EmailLog, HistoryRow } from '../types';
 
 const COLS =
-  'id, option_id, ticket_reference, customer_name, gmail_email, contact_email, school_name, school_login_type, due_date, status, admin_notes, issue_reason, issue_reported_at, terms_version, terms_text, created_at, updated_at, slot_number, slot_reserved_at, processing_started_at, slot_expires_at, request_options(key, name)';
+  'id, option_id, auth_user_id, ticket_reference, customer_name, gmail_email, contact_email, school_name, school_login_type, due_date, status, admin_notes, issue_reason, issue_reported_at, terms_version, terms_text, created_at, updated_at, slot_number, slot_reserved_at, processing_started_at, slot_expires_at, request_options(key, name)';
 
 function check<T>(res: { data: T | null; error: { message: string } | null }): T {
   if (res.error) throw new Error(res.error.message);
@@ -16,6 +16,24 @@ export async function isAdmin(): Promise<boolean> {
 }
 export const listRequests = async () =>
   check(await supabase.from('requests').select(COLS).order('created_at', { ascending: false }).limit(1000)) as unknown as AdminRequest[];
+export async function listAdminAccounts(): Promise<AdminAccount[]> {
+  return check(await supabase.rpc('admin_list_accounts')) as AdminAccount[];
+}
+export async function setAccountPriority(userId: string, priority: boolean): Promise<void> {
+  const { error } = await supabase.rpc('admin_set_account_priority', {
+    p_user_id: userId,
+    p_is_priority: priority,
+  });
+  if (error) throw new Error(error.message);
+}
+export async function banAccount(userId: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_ban_account', { p_user_id: userId });
+  if (error) throw new Error(error.message);
+}
+export async function unbanAccount(userId: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_unban_account', { p_user_id: userId });
+  if (error) throw new Error(error.message);
+}
 export const getServicePassword = async (id: string) =>
   check<{ service_password: string }>(await supabase.from('requests').select('service_password').eq('id', id).single()).service_password;
 export const listHistory = async (id: string) =>

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { Loader2, LogOut } from 'lucide-react';
 import { useSession } from '../hooks/useSession';
-import { submitAccountSignOut, getUserProfile, hasPersonalGoogleVerification, saveUserProfile } from '../services/accounts';
+import { submitAccountSignOut, getUserProfile, hasPersonalGoogleVerification, isCurrentAccountBanned, saveUserProfile } from '../services/accounts';
 import type { SchoolLoginType, UserProfile } from '../types';
 import AccountAccess from './AccountAccess';
 import Landing from './Landing';
@@ -60,7 +60,10 @@ function Onboarding({ user, onComplete }: { user: User; onComplete: (profile: Us
       });
       onComplete(profile);
     } catch (e) {
-      setError((e as Error).message || 'Could not save your onboarding details.');
+      const message = (e as Error).message || 'Could not save your onboarding details.';
+      setError(message.includes('account_banned')
+        ? 'This school email is associated with a banned account.'
+        : message);
     } finally {
       setSaving(false);
     }
@@ -130,6 +133,7 @@ function ProfileGate({ session }: { session: Session }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [verifiedGoogle, setVerifiedGoogle] = useState<boolean | null>(null);
+  const [banned, setBanned] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -138,6 +142,9 @@ function ProfileGate({ session }: { session: Session }) {
       setLoading(true);
       setError('');
       try {
+        const accountBanned = await isCurrentAccountBanned();
+        if (active) setBanned(accountBanned);
+        if (accountBanned) return;
         if (isGoogleAccount(user)) {
           let verified = false;
           for (let attempt = 0; attempt < 6 && active; attempt++) {
@@ -166,6 +173,15 @@ function ProfileGate({ session }: { session: Session }) {
   }
 
   if (loading) return <div className="center full"><Loader2 className="spin" /></div>;
+  if (banned) {
+    return (
+      <main className="lockdown-status" role="alert">
+        <h1>Account access suspended</h1>
+        <p>This account or its school email has been banned from HWRK. Contact support if you believe this is a mistake.</p>
+        <button className="btn primary" onClick={signOut}><LogOut size={15} /> Sign out</button>
+      </main>
+    );
+  }
   if (verifiedGoogle === false) return <GoogleAccountRequired onSignOut={signOut} />;
   if (!session.user.email || !session.user.email_confirmed_at) {
     return (

@@ -85,7 +85,10 @@ export default function AccountAccess() {
         if (signInError) throw signInError;
       }
     } catch (e) {
-      setError((e as Error).message || 'Could not continue with email.');
+      const message = (e as Error).message || 'Could not continue with email.';
+      setError(message.includes('account_banned')
+        ? 'This email is associated with a banned account.'
+        : message);
     } finally {
       setBusy('');
     }
