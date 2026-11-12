@@ -75,8 +75,8 @@ Each active option has two slots and can hold at most 14 outstanding requests. T
 
 1. Push to a GitHub repo with `main` as the default branch.
 2. Settings > Pages > Source: **GitHub Actions**.
-3. Optionally add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Actions secrets. Non-empty secrets override the same public frontend values from `.env`; if a secret is unset, the build uses `.env`.
-4. Add repository variable `VITE_GOOGLE_CLIENT_ID` for Google sign-in. For a custom domain, add repository variable `VITE_BASE_PATH` = `/`. Otherwise the base defaults to `/<repo-name>/`.
+3. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Actions secrets for the frontend.
+4. Add `VITE_GOOGLE_CLIENT_ID` as a repository variable or Actions secret for Google sign-in. For a custom domain, add repository variable `VITE_BASE_PATH` = `/`. Otherwise the base defaults to `/<repo-name>/`.
 5. Push to `main`. The workflow builds and deploys. `dist/404.html` is a copy of `index.html` so `/admin` and `/t/<token>` survive a refresh.
 
 ## 7. Local development

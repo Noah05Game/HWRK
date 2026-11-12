@@ -47,10 +47,13 @@ jobs:
           fi
       - name: Set Google sign-in client ID
         env:
-          GOOGLE_CLIENT_ID_VALUE: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_ID_VALUE: ${{ vars.VITE_GOOGLE_CLIENT_ID || secrets.VITE_GOOGLE_CLIENT_ID }}
         run: |
           if [ -n "$GOOGLE_CLIENT_ID_VALUE" ]; then
             echo "VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID_VALUE" >> "$GITHUB_ENV"
+          else
+            echo "Missing VITE_GOOGLE_CLIENT_ID: add it as a GitHub Actions variable or secret."
+            exit 1
           fi
       - name: Verify Supabase frontend config
         run: |
