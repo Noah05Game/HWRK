@@ -191,7 +191,7 @@ as $$
 begin
   if not public.is_admin() then raise exception 'not_authorized'; end if;
   return query
-  select u.id, u.email, p.school_email, p.full_name, coalesce(p.is_priority, false),
+  select u.id, u.email::text, p.school_email, p.full_name, coalesce(p.is_priority, false),
     (b.id is not null),
     (direct_ban.id is not null),
     u.created_at
