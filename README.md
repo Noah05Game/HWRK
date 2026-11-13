@@ -20,6 +20,7 @@ supabase/
 The queue migrations add the `cancelled` status and account-slot tables. Migration `0008_queue_and_account_slots.sql` also schedules slot expiry with Supabase's `pg_cron` extension.
 Migration `0012_priority_and_account_bans.sql` adds administrator-managed priority access and persistent ban records. Apply it to the database before deploying this version of the app.
 Migration `0013_prohibited_ips_and_private_analytics.sql` adds IP blocking and anonymous daily aggregate activity counts. Apply it before deploying the `site-gate` Edge Function and frontend.
+Migration `0016_user_tracking_and_account_controls.sql` enables authenticated request cancellation and cancellation-email logs. Apply it before deploying the account and tracking changes.
 
 ## User accounts and onboarding
 
@@ -28,6 +29,8 @@ Visitors create an account with Google or email before submitting a request. Ema
 After sign-in, onboarding collects the user's full name, school email, school/Sparx password, school name, and school login type (Email, Google, or Microsoft). The contact email is taken from the account email and must differ from the school email. The request form reuses these saved details; its request options, terms, and completion-date flow remain in place. Profile rows can only be accessed by their owner, and school credentials are copied to each request for the existing admin workflow.
 
 Admins can open **Accounts** to grant or remove priority access and ban or unban accounts. Priority requests move ahead of standard requests and may replace the least-recently-reserved waiting slot; work already in progress is not interrupted. Ban records retain both the account email and school email, including after unbanning. Banned emails are rejected during account creation, sign-in, onboarding, and request submission.
+
+Signed-in users can open **My requests** to see their requests, status history, due dates, processing details, and reported issues. Waiting requests can be cancelled from this page. **Account settings** lets users update their profile and sign-in email/password or permanently delete their account. Deleting an account removes its sign-in and profile but keeps existing requests and their fulfillment history for administrators. Admins can also delete accounts from **Accounts**. When changing a request status, including cancelling it, admins can choose whether to email the customer; when disabled, the status remains visible in **My requests**.
 
 Admins can also manage exact IPv4 or IPv6 addresses under **Prohibited IPs** and review daily page-view and successful-request totals under **Logs**. The analytics table stores only one aggregate row per date and contains no IP, account, email, cookie, or individual visit fields. Page views are not unique people. IP addresses entered in the prohibited list are stored separately only to enforce the block. The site is hosted as a static GitHub Pages app, so the browser checks the visitor's IP before rendering app content; the static app files themselves remain publicly downloadable.
 
@@ -38,7 +41,7 @@ Admins can also manage exact IPv4 or IPv6 addresses under **Prohibited IPs** and
    ```sql
    insert into public.admins (user_id) select id from auth.users where email = 'you@example.com';
    ```
-3. Sign in at `/admin`. Accounts not listed in `admins` see "Not authorised" and cannot read any data.
+3. Sign in at `/admin`. Accounts not listed in `admins` see "Not authorised" and cannot read any data. The signed-in admin account cannot be deleted from the admin account list; use its own Account Settings if it needs to be removed.
 
 ## 3. Resend and the sending domain
 
@@ -62,7 +65,7 @@ GOOGLE_CLIENT_ID=<Google Web OAuth client ID>
 ```
 supabase secrets set --env-file supabase/.env
 supabase db push
-supabase functions deploy submit-request verify-google-account site-gate track-request admin-update-status admin-report-issue admin-delete-completed-request admin-retry-email
+supabase functions deploy submit-request verify-google-account site-gate track-request user-list-requests delete-account admin-update-status admin-report-issue admin-delete-completed-request admin-retry-email
 ```
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into functions automatically. The service-role key and Resend key never reach the frontend. `APP_BASE_URL` must be the exact public site origin (scheme and hostname, no path) because it is used for both CORS and tracking links. For this deployment, use `https://hwrk.wpoint.xyz`. Do not change `SERVER_SECRET` later: it encrypts tracking tokens.

@@ -96,6 +96,8 @@ function AppRoutes() {
     <>
       <Routes>
         <Route path="/" element={<UserHome />} />
+        <Route path="/account" element={<UserHome />} />
+        <Route path="/requests" element={<UserHome />} />
         <Route path="/t/:token" element={<Track />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />

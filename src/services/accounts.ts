@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import type { SchoolLoginType, UserProfile } from '../types';
+import type { SchoolLoginType, UserProfile, UserRequest } from '../types';
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   const { data, error } = await supabase
@@ -81,4 +81,31 @@ export async function verifyPersonalGoogleAccount(idToken: string, accessToken: 
 export async function submitAccountSignOut(): Promise<void> {
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(error.message);
+}
+
+export async function listUserRequests(): Promise<UserRequest[]> {
+  const { data, error } = await supabase.functions.invoke('user-list-requests');
+  if (error) throw new Error(error.message || 'Could not load your requests.');
+  if (!Array.isArray(data)) throw new Error('Request tracking returned an invalid response.');
+  return data as UserRequest[];
+}
+
+export async function cancelOwnRequest(requestId: string): Promise<void> {
+  const { data, error } = await supabase.rpc('cancel_own_request', { p_id: requestId });
+  if (error) {
+    if (error.message.includes('request_not_cancellable')) {
+      throw new Error('Only requests that are still waiting can be cancelled.');
+    }
+    if (error.message.includes('request_not_found')) {
+      throw new Error('This request could not be found for your account.');
+    }
+    throw new Error(error.message);
+  }
+  if (data !== true) throw new Error('The request could not be cancelled.');
+}
+
+export async function deleteOwnAccount(): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('delete-account', { body: {} });
+  if (error) throw new Error(error.message || 'Could not delete your account.');
+  if (!data || data.deleted !== true) throw new Error('Account deletion returned an invalid response.');
 }

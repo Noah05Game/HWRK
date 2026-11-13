@@ -34,6 +34,11 @@ export async function unbanAccount(userId: string): Promise<void> {
   const { error } = await supabase.rpc('admin_unban_account', { p_user_id: userId });
   if (error) throw new Error(error.message);
 }
+export async function deleteAccount(userId: string): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('delete-account', { body: { userId } });
+  if (error) throw new Error(error.message || 'Could not delete this account.');
+  if (!data || data.deleted !== true) throw new Error('Account deletion returned an invalid response.');
+}
 export async function listProhibitedIps(): Promise<ProhibitedIp[]> {
   return check(await supabase.rpc('admin_list_prohibited_ips')) as ProhibitedIp[];
 }

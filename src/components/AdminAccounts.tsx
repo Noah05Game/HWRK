@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Loader2, RotateCw, Search, ShieldBan, ShieldCheck, Star } from 'lucide-react';
+import { Loader2, RotateCw, Search, ShieldBan, ShieldCheck, Star, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from './ConfirmDialog';
-import { banAccount, listAdminAccounts, setAccountPriority, unbanAccount } from '../services/admin';
+import { banAccount, deleteAccount, listAdminAccounts, setAccountPriority, unbanAccount } from '../services/admin';
 import type { AdminAccount } from '../types';
 
-export function AdminAccounts() {
+export function AdminAccounts({ currentUserId }: { currentUserId: string }) {
   const [accounts, setAccounts] = useState<AdminAccount[] | null>(null);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [busyUser, setBusyUser] = useState('');
   const [banTarget, setBanTarget] = useState<AdminAccount | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminAccount | null>(null);
 
   const load = useCallback(async () => {
     setError('');
@@ -52,6 +53,20 @@ export function AdminAccounts() {
       await load();
     } catch (e) {
       setError((e as Error).message || `Could not ${shouldBan ? 'ban' : 'unban'} this account.`);
+    } finally {
+      setBusyUser('');
+    }
+  }
+
+  async function removeAccount(account: AdminAccount) {
+    setBusyUser(account.user_id);
+    setError('');
+    try {
+      await deleteAccount(account.user_id);
+      setDeleteTarget(null);
+      await load();
+    } catch (e) {
+      setError((e as Error).message || 'Could not delete this account.');
     } finally {
       setBusyUser('');
     }
@@ -115,6 +130,11 @@ export function AdminAccounts() {
                           <ShieldBan size={14} /> Ban
                         </button>
                       )}
+                      <button className="btn danger sm" onClick={() => setDeleteTarget(account)}
+                        disabled={busyUser === account.user_id || account.user_id === currentUserId}
+                        title={account.user_id === currentUserId ? 'Use Account Settings to delete your own account' : undefined}>
+                        <Trash2 size={14} /> Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -131,6 +151,16 @@ export function AdminAccounts() {
           onConfirm={() => updateBan(banTarget, true)}
           onCancel={() => setBanTarget(null)}
           busy={busyUser === banTarget.user_id}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete this account?"
+          message={`The sign-in and profile for ${deleteTarget.account_email || 'this user'} will be permanently deleted. Their existing requests will remain in the admin workflow and history.`}
+          confirmLabel="Delete account"
+          onConfirm={() => removeAccount(deleteTarget)}
+          onCancel={() => setDeleteTarget(null)}
+          busy={busyUser === deleteTarget.user_id}
         />
       )}
     </section>

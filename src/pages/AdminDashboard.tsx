@@ -170,7 +170,7 @@ export default function AdminDashboard({ session }: { session: Session }) {
       {section === 'queue' && rows && <QueueManagement requests={rows} onChanged={load} />}
       {section === 'queue' && !rows && loadError && <p className="banner error" role="alert">{loadError} <button className="btn ghost sm" onClick={load}>Retry</button></p>}
       {section === 'queue' && !rows && !loadError && <div className="center"><Loader2 className="spin" /></div>}
-      {section === 'accounts' && <AdminAccounts />}
+      {section === 'accounts' && <AdminAccounts currentUserId={session.user.id} />}
       {section === 'prohibited-ips' && <ProhibitedIps />}
       {section === 'logs' && <AdminLogs />}
       {section === 'maintenance' && <MaintenanceSettings />}

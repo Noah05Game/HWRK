@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { REQUEST_OPTIONS } from '../config/options';
 import { Wordmark } from '../components/Wordmark';
+import { UserAreaNav } from '../components/UserAreaNav';
 import { RequestForm } from '../components/RequestForm';
 import { Confirmation } from '../components/Confirmation';
 import { isConfigured, supabase } from '../lib/supabase';
@@ -73,7 +74,10 @@ export default function Landing({ profile, accountEmail }: { profile: UserProfil
     <div className="page">
       <header className="topbar">
         <Wordmark />
-        <button className="btn ghost sm" onClick={signOut}><LogOut size={15} /> Sign out</button>
+        <div className="topbar-actions">
+          <UserAreaNav />
+          <button className="btn ghost sm" onClick={signOut}><LogOut size={15} /> Sign out</button>
+        </div>
       </header>
       <main className="container">
         <h1 className={`hero ${maintenance ? 'maintenance-title' : ''}`}>{maintenance ? 'Down for maintenance' : 'Make a request'}</h1>

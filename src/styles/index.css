@@ -120,6 +120,19 @@ select option { background: var(--surface); }
 .maintenance-banner p { margin: 0; }
 .account-panel, .onboarding-panel { padding: 28px; }
 .account-panel .h2, .onboarding-panel .h2 { margin-bottom: 8px; }
+.account-danger { padding: 24px; margin-top: 20px; }
+.account-danger h2 { font-size: 18px; margin-bottom: 6px; }
+.status-notification { margin: 0 0 18px; }
+.user-requests-heading { margin-bottom: 18px; }
+.user-requests-heading .h2 { margin-bottom: 4px; }
+.user-request-list { display: grid; gap: 16px; }
+.user-request-card { padding: 24px; border-top: 2px solid color-mix(in srgb, var(--accent) 70%, transparent); }
+.user-request-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.user-request-head h2 { font-size: 20px; }
+.user-request-issue { margin-top: 18px; }
+.user-request-issue p:last-child { margin-bottom: 0; }
+.user-request-actions { margin-top: 16px; }
+.user-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .account-providers { display: grid; gap: 12px; margin-top: 20px; }
 .google-sign-in { position: relative; min-height: 44px; display: flex; justify-content: center; }
 .google-sign-in > div { width: 100%; display: flex; justify-content: center; }

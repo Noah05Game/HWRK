@@ -1,4 +1,4 @@
-export type EmailType = 'request_created' | 'request_in_progress' | 'request_completed' | 'request_issue';
+export type EmailType = 'request_created' | 'request_in_progress' | 'request_completed' | 'request_issue' | 'request_cancelled';
 
 export interface EmailData {
   name: string;
@@ -61,6 +61,13 @@ export function buildEmail(type: EmailType, d: EmailData): { subject: string; ht
         subject: `Your HWRK request has been completed — ${d.ref}`,
         html: layout('Your request is complete', `Hi ${name}, your request has been completed.`, [
           ['Ticket', d.ref], ['Request', d.option], ['Status', 'Completed'],
+        ], d.url),
+      };
+    case 'request_cancelled':
+      return {
+        subject: `Your HWRK request has been cancelled — ${d.ref}`,
+        html: layout('Your request has been cancelled', `Hi ${name}, your request has been cancelled.`, [
+          ['Ticket', d.ref], ['Request', d.option], ['Status', 'Cancelled'],
         ], d.url),
       };
     case 'request_issue': {

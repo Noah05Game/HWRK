@@ -12,7 +12,7 @@ import { STATUS_LABEL, type AdminRequest, type EmailLog, type HistoryRow, type O
 
 interface Props { request: AdminRequest; token: string; onClose: () => void; onChanged: () => void; onDeleted: () => void; onSessionError: (e: unknown) => void }
 
-const EMAIL_LABEL: Record<string, string> = { request_created: 'Request received', request_in_progress: 'In progress', request_completed: 'Completed', request_issue: 'Issue reported' };
+const EMAIL_LABEL: Record<string, string> = { request_created: 'Request received', request_in_progress: 'In progress', request_completed: 'Completed', request_issue: 'Issue reported', request_cancelled: 'Cancelled' };
 
 export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted, onSessionError }: Props) {
   const toast = useToast();
@@ -29,6 +29,7 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [pending, setPending] = useState<Status | null>(null);
+  const [notifyCustomer, setNotifyCustomer] = useState(true);
   const [busy, setBusy] = useState(false);
   const [retrying, setRetrying] = useState('');
   const [replacementSlots, setReplacementSlots] = useState<OptionSlot[] | null>(null);
@@ -58,10 +59,12 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
     if (!pending) return;
     setBusy(true);
     try {
-      const res = await updateStatus(token, r.id, pending);
+      const shouldNotify = notifyCustomer;
+      const res = await updateStatus(token, r.id, pending, shouldNotify);
       if (!res.changed) toast('success', 'Status was already set.');
       else if (res.email === 'failed') toast('error', 'Status updated, but the email failed. Retry it from the email log.');
-      else toast('success', res.email === 'sent' ? 'Status updated and customer notified.' : 'Status updated.');
+      else toast('success', res.email === 'sent' ? 'Status updated and customer notified.' : shouldNotify
+        ? 'Status updated.' : 'Status updated. The customer can see it in request tracking.');
       setPending(null); onChanged(); loadExtras();
     } catch (e) { onSessionError(e); toast('error', (e as Error).message); }
     setBusy(false);
@@ -156,8 +159,6 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
   const allowedStatuses: Status[] = r.status === 'ordered'
     ? ['in_progress', 'cancelled']
     : r.status === 'in_progress' ? ['completed', 'cancelled'] : [];
-  const note = (s: Status) => (s === 'cancelled' ? 'No email is sent.' : 'The customer will be emailed.');
-
   return (
     <Modal title={r.ticket_reference} onClose={onClose} wide>
       <div className="detail-top"><StatusBadge status={r.status} />{overdue && <span className="badge overdue"><i />Overdue</span>}</div>
@@ -202,7 +203,7 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
       )}
       <div className="segmented" role="group" aria-label="Change status">
         {allowedStatuses.map((s) => (
-          <button key={s} onClick={() => setPending(s)}>{STATUS_LABEL[s]}</button>
+          <button key={s} onClick={() => { setNotifyCustomer(true); setPending(s); }}>{STATUS_LABEL[s]}</button>
         ))}
         {allowedStatuses.length === 0 && <p className="muted small">This request is closed.</p>}
       </div>
@@ -261,8 +262,14 @@ export function RequestDetail({ request: r, token, onClose, onChanged, onDeleted
       )}
 
       {pending && (
-        <ConfirmDialog title={`Change status to ${STATUS_LABEL[pending]}?`} message={`${r.ticket_reference} will move from ${STATUS_LABEL[r.status]} to ${STATUS_LABEL[pending]}. ${note(pending)}`}
-          confirmLabel="Change status" busy={busy} onConfirm={confirmStatus} onCancel={() => setPending(null)} />
+        <ConfirmDialog title={`Change status to ${STATUS_LABEL[pending]}?`}
+          message={`${r.ticket_reference} will move from ${STATUS_LABEL[r.status]} to ${STATUS_LABEL[pending]}.`}
+          confirmLabel="Change status" busy={busy} onConfirm={confirmStatus} onCancel={() => setPending(null)}>
+          <label className="terms-check status-notification">
+            <input type="checkbox" checked={notifyCustomer} onChange={(event) => setNotifyCustomer(event.target.checked)} disabled={busy} />
+            <span>Email the customer about this update. If unchecked, the new status will only appear in their tracking menu.</span>
+          </label>
+        </ConfirmDialog>
       )}
       {confirmDelete && (
         <ConfirmDialog title="Delete order?" message={`${r.ticket_reference} and its history and email logs will be permanently deleted. This cannot be undone.`}

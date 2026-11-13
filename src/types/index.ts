@@ -52,6 +52,23 @@ export interface TrackResult {
   queuePosition: number | null; peopleAhead: number | null; estimatedSlotAt: string | null; slotReserved: boolean;
   slotNumber: number | null; slotReservedAt: string | null; processingStartedAt: string | null; slotExpiresAt: string | null;
 }
+export interface UserRequest {
+  id: string;
+  ticketReference: string;
+  status: Status;
+  optionName: string;
+  accent: string;
+  dueDate: string;
+  createdAt: string;
+  updatedAt: string;
+  issueReason: string | null;
+  issueReportedAt: string | null;
+  slotNumber: number | null;
+  slotReservedAt: string | null;
+  processingStartedAt: string | null;
+  slotExpiresAt: string | null;
+  history: { previousStatus: Status | null; newStatus: Status; changedAt: string }[];
+}
 export interface AdminRequest {
   id: string; option_id: string; auth_user_id: string | null; ticket_reference: string; customer_name: string; gmail_email: string; contact_email: string;
   school_name: string; school_login_type: string;

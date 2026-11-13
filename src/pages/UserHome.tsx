@@ -1,11 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { Loader2, LogOut } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useSession } from '../hooks/useSession';
 import { submitAccountSignOut, getUserProfile, hasPersonalGoogleVerification, isCurrentAccountBanned, saveUserProfile } from '../services/accounts';
 import type { SchoolLoginType, UserProfile } from '../types';
 import AccountAccess from './AccountAccess';
+import AccountSettings from './AccountSettings';
 import Landing from './Landing';
+import UserRequests from './UserRequests';
 
 function isGoogleAccount(user: User) {
   return user.identities?.some((identity) => identity.provider === 'google')
@@ -129,6 +132,7 @@ function GoogleAccountRequired({ onSignOut }: { onSignOut: () => void }) {
 }
 
 function ProfileGate({ session }: { session: Session }) {
+  const { pathname } = useLocation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -201,9 +205,10 @@ function ProfileGate({ session }: { session: Session }) {
       </main>
     );
   }
-  return profile
-    ? <Landing profile={profile} accountEmail={session.user.email ?? ''} />
-    : <Onboarding user={session.user} onComplete={setProfile} />;
+  if (!profile) return <Onboarding user={session.user} onComplete={setProfile} />;
+  if (pathname === '/account') return <AccountSettings session={session} profile={profile} onProfileUpdated={setProfile} />;
+  if (pathname === '/requests') return <UserRequests />;
+  return <Landing profile={profile} accountEmail={session.user.email ?? ''} />;
 }
 
 export default function UserHome() {
