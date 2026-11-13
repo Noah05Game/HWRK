@@ -8,7 +8,7 @@ import { verifyPersonalGoogleAccount } from '../services/accounts';
 type EmailMode = 'sign_up' | 'sign_in';
 type ProviderBusy = 'email' | 'google' | '';
 
-const redirectUrl = `${window.location.origin}${import.meta.env.BASE_URL}`;
+const redirectUrl = new URL('email-verified', `${window.location.origin}${import.meta.env.BASE_URL}`).toString();
 const GOOGLE_AUTH_ERROR_KEY = 'hwrk.google-auth-error';
 
 export default function AccountAccess() {

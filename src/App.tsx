@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { ToastProvider } from './hooks/useToast';
 import { SiteAttribution } from './components/SiteAttribution';
@@ -9,6 +9,8 @@ import Lockdown from './pages/Lockdown';
 import NotFound from './pages/NotFound';
 import { getMaintenanceSettings } from './services/maintenance';
 import { publicSupabase } from './lib/supabase';
+
+const EmailVerified = lazy(() => import('./pages/EmailVerified'));
 
 function AppRoutes() {
   const { pathname } = useLocation();
@@ -98,6 +100,11 @@ function AppRoutes() {
         <Route path="/" element={<UserHome />} />
         <Route path="/account" element={<UserHome />} />
         <Route path="/requests" element={<UserHome />} />
+        <Route path="/email-verified" element={
+          <Suspense fallback={<main className="lockdown-status" role="status"><h1>Loading verification page…</h1></main>}>
+            <EmailVerified />
+          </Suspense>
+        } />
         <Route path="/t/:token" element={<Track />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="*" element={<NotFound />} />

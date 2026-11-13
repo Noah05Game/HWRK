@@ -133,6 +133,14 @@ select option { background: var(--surface); }
 .user-request-issue p:last-child { margin-bottom: 0; }
 .user-request-actions { margin-top: 16px; }
 .user-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.verification-panel { padding: 36px 32px; text-align: center; }
+.verification-panel .h2 { margin: 14px 0 8px; }
+.verification-panel p:not(.verification-eyebrow) { margin-bottom: 20px; }
+.verification-icon { display: grid; width: 58px; height: 58px; margin: 0 auto; place-items: center; border-radius: 50%; }
+.verification-icon.success { color: var(--completed); background: rgba(48, 209, 88, 0.12); }
+.verification-icon.pending { color: var(--muted); background: rgba(255, 255, 255, 0.07); }
+.verification-icon.error { color: var(--danger); background: rgba(255, 69, 58, 0.12); }
+.verification-eyebrow { margin: 20px 0 0; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; }
 .account-providers { display: grid; gap: 12px; margin-top: 20px; }
 .google-sign-in { position: relative; min-height: 44px; display: flex; justify-content: center; }
 .google-sign-in > div { width: 100%; display: flex; justify-content: center; }
